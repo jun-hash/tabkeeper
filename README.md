@@ -79,7 +79,7 @@ Files matched by `.gitignore` (such as `.env`, build output, or local databases)
 ## Install
 
 ```sh
-git clone <this repo> tabkeeper && cd tabkeeper
+git clone https://github.com/jun-hash/tabkeeper.git && cd tabkeeper
 npm install && npm run build && npm link
 ```
 

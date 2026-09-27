@@ -43,5 +43,13 @@
     "@types/node": "^22.20.4",
     "typescript": "^7.0.2",
     "vitest": "^5.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jun-hash/tabkeeper.git"
+  },
+  "homepage": "https://github.com/jun-hash/tabkeeper#readme",
+  "bugs": {
+    "url": "https://github.com/jun-hash/tabkeeper/issues"
   }
 }
