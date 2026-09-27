@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>tabkeeper — Spec</title>
+<style>
+  :root {
+    --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; --border: #e7e5e4;
+    --accent: #2563eb; --accent-bg: #eff6ff;
+    --ok: #16a34a; --warn: #ca8a04; --bad: #dc2626;
+    --mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+    --sans: -apple-system, 'Inter', 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); font-family: var(--sans); line-height: 1.65; font-size: 15px; }
+  .layout { display: grid; grid-template-columns: 240px 1fr; max-width: 1400px; margin: 0 auto; min-height: 100vh; }
+  nav.toc { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 32px 20px; border-right: 1px solid var(--border); background: white; font-size: 13px; }
+  nav.toc h4 { margin: 0 0 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+  nav.toc a { display: block; padding: 6px 8px; color: var(--fg); text-decoration: none; border-radius: 4px; margin-bottom: 2px; }
+  nav.toc a:hover { background: var(--accent-bg); color: var(--accent); }
+  nav.toc .badge { float: right; font-size: 11px; }
+  main { padding: 48px 64px; max-width: 900px; }
+  h1 { font-size: 32px; margin: 0 0 8px; letter-spacing: -0.02em; }
+  h2 { font-size: 22px; margin: 56px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  h2 .num { color: var(--muted); font-variant-numeric: tabular-nums; }
+  h2 .badge { margin-left: auto; font-size: 14px; padding: 4px 10px; border-radius: 999px; font-weight: 500; }
+  .badge-ok { background: #dcfce7; color: #166534; }
+  .badge-warn { background: #fef3c7; color: #92400e; }
+  .badge-bad { background: #fee2e2; color: #991b1b; }
+  h3 { font-size: 17px; margin: 28px 0 10px; }
+  p, li { color: var(--fg); }
+  code { font-family: var(--mono); font-size: 0.9em; background: #f4f4f5; padding: 2px 6px; border-radius: 3px; }
+  pre { background: #1c1917; color: #fafaf9; padding: 16px 20px; border-radius: 8px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.55; }
+  pre code { background: none; color: inherit; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: #f4f4f5; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
+  mark.ambiguous { background: #fef08a; padding: 2px 6px; border-radius: 3px; font-weight: 500; }
+  mark.ambiguous::before { content: "❓ "; }
+  .review-box { background: var(--accent-bg); border-left: 4px solid var(--accent); padding: 14px 18px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+  .review-box h4 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); }
+  .qa { border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 16px 0; background: white; }
+  .qa .q { font-weight: 600; margin: 0 0 8px; color: var(--accent); }
+  .qa .a { margin: 0; color: var(--fg); }
+  svg.diagram { display: block; max-width: 100%; height: auto; margin: 20px auto; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+  .checklist { list-style: none; padding: 0; }
+  .checklist li { padding: 6px 0 6px 28px; position: relative; }
+  .checklist li::before { content: "☐"; position: absolute; left: 0; color: var(--muted); font-size: 18px; }
+  .checklist li.done::before { content: "☑"; color: var(--ok); }
+  .seam { border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 16px 20px; margin: 20px 0; background: white; }
+  .seam .seam-title { font-weight: 700; margin: 0 0 4px; font-family: var(--mono); font-size: 14px; color: var(--accent); }
+  .seam .seam-sub { margin: 0 0 12px; font-size: 12px; color: var(--muted); }
+  .seam h5 { margin: 14px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+  .seam pre { margin: 6px 0; }
+  .seam table { margin: 6px 0 0; }
+  .contract-row th { width: 160px; white-space: nowrap; }
+  .flow { border: 1px solid var(--border); border-top: 4px solid var(--accent); border-radius: 8px; padding: 8px 24px 20px; margin: 24px 0; background: white; }
+  .flow > h3 { color: var(--accent); }
+  .flow .slot { margin: 18px 0; padding-left: 14px; border-left: 3px solid var(--border); }
+  .flow .slot > h4 { margin: 0 0 6px; font-size: 13px; }
+  .flow .slot .hint { color: var(--muted); font-size: 12px; margin: 0 0 8px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc">
+  <h4>Spec Sections</h4>
+  <a href="#s0">0. Overview <span class="badge badge-ok">🟢</span></a>
+  <a href="#s1">1. Requirements <span class="badge badge-ok">🟢</span></a>
+  <a href="#s2">2. Business Logic &amp; Policy <span class="badge badge-ok">🟢</span></a>
+  <a href="#s3">3. Error Handling <span class="badge badge-ok">🟢</span></a>
+  <a href="#s4">4. Architecture <span class="badge badge-ok">🟢</span></a>
+  <a href="#s5">5. Seams <span class="badge badge-ok">🟢</span></a>
+  <a href="#s6">6. Contracts <span class="badge badge-ok">🟢</span></a>
+  <a href="#s7">7. Core Flows <span class="badge badge-ok">🟢</span></a>
+  <a href="#s8">8. End-to-End <span class="badge badge-ok">🟢</span></a>
+  <a href="#s9">9. Testing <span class="badge badge-ok">🟢</span></a>
+  <a href="#s10">10. Senior Review <span class="badge badge-ok">🟢</span></a>
+  <a href="#s11">11. Open Questions <span class="badge badge-warn">🟡</span></a>
+  <h4 style="margin-top:24px">Legend</h4>
+  <div style="font-size:12px; line-height:1.7;">🟢 done · 🟡 draft · 🔴 blocked<br><mark class="ambiguous">text</mark> = open ambiguity</div>
+</nav>
+
+<main>
+<h1>tabkeeper — 에이전트 탭 자동 아카이브</h1>
+<div class="meta">Spec · 2026-09-26 · author: junseon-yoon (+ Claude) · 사용자 지시로 브레인스토밍 게이트 이후 자율 구현, 구현 결과 기준으로 작성(as-built)</div>
+
+<h2 id="s0"><span class="num">0.</span> Overview <span class="badge badge-ok">🟢</span></h2>
+<h3>Problem</h3>
+<p>Orca·cmux 같은 에이전트 터미널에 병렬 에이전트를 돌리면 며칠째 안 쓰는 워크트리/탭이 사이드바에 쌓인다. 두 앱 모두 자동 정리 기능이 없고(Orca는 수동 cleanup UI만, cmux는 닫기만), 앱마다 API가 달라 한 번 만든 도구를 다른 앱에 옮기기 어렵다.</p>
+<h3>Goal</h3>
+<p><strong>idle한 세션·워크스페이스를 계층적으로 자동 아카이브하고, 에이전트 대화까지 복원 가능하게 하는 호스트-독립 오픈소스 CLI/라이브러리.</strong></p>
+<h3>Out of scope</h3>
+<ul>
+  <li>앱 내부 UI 패치(사이드바 버튼 등) — 외부 CLI/소켓만 사용</li>
+  <li>실행 중 프로세스 상태(L4) 복원 — 대신 busy로 보호</li>
+  <li>상주 데몬/이벤트 구독 — 스케줄러(launchd/cron)가 <code>sweep</code>를 주기 실행</li>
+  <li>기본값에서의 워크트리 삭제 — <code>purge</code>는 옵트인</li>
+</ul>
+<h3>Glossary</h3>
+<table><thead><tr><th>Term</th><th>Definition</th></tr></thead><tbody>
+<tr><td><code>host</code></td><td>탭을 가진 앱(Orca, cmux, tmux…). <code>HostAdapter</code> 하나로 표현</td></tr>
+<tr><td><code>workspace</code></td><td>상위 단위: Orca worktree · cmux workspace · tmux session</td></tr>
+<tr><td><code>session</code></td><td>하위 단위: 터미널/브라우저 탭 · tmux window</td></tr>
+<tr><td><code>archive record</code></td><td>닫기 전에 저장하는 스냅샷(메타·스크롤백·agent resume)</td></tr>
+<tr><td><code>mode</code></td><td><code>native</code>=호스트가 스스로 재개(Orca sleep) · <code>closed</code>=tabkeeper가 스냅샷으로 재생성</td></tr>
+<tr><td><code>fingerprint</code></td><td>화면 내용 해시. 타임스탬프 없는 호스트의 활동 시계</td></tr>
+</tbody></table>
+
+<h2 id="s1"><span class="num">1.</span> Requirements <span class="badge badge-ok">🟢</span></h2>
+<ul>
+  <li><strong>US-1.</strong> 에이전트 여러 개를 돌리는 개발자로서, 안 쓰는 탭이 자동으로 정리되길 원한다 — 사이드바가 지금 하는 일만 보이도록.</li>
+  <li><strong>US-2.</strong> 정리된 탭을 대화 맥락째 되살리고 싶다 — 아카이브가 두렵지 않도록.</li>
+  <li><strong>US-3.</strong> 새 터미널 앱에도 파일 하나로 붙이고 싶다 — 오픈소스로 어디든 이식.</li>
+</ul>
+<table><thead><tr><th>#</th><th>Given</th><th>When</th><th>Then</th></tr></thead><tbody>
+<tr><td>AC-1</td><td>탭이 12h 무활동</td><td>sweep</td><td>스냅샷 저장 후 그 탭만 닫힘</td></tr>
+<tr><td>AC-2</td><td>워크스페이스의 모든 탭이 7d 무활동</td><td>sweep</td><td>워크스페이스 통째 아카이브(캐스케이드)</td></tr>
+<tr><td>AC-3</td><td>에이전트가 working</td><td>sweep</td><td>탭·부모 워크스페이스 모두 유지</td></tr>
+<tr><td>AC-4</td><td>아카이브된 에이전트 탭</td><td>restore</td><td>같은 cwd·제목 + <code>claude --resume &lt;id&gt;</code>로 재생성</td></tr>
+<tr><td>AC-5</td><td>새 호스트</td><td>plugin 모듈 등록</td><td>코어 수정 없이 동작 (tmux 예제로 검증)</td></tr>
+<tr><td>AC-6</td><td>purge.enabled, 30d 경과</td><td>sweep/purge</td><td>clean·pushed인 워크트리만 삭제</td></tr>
+</tbody></table>
+
+<h2 id="s2"><span class="num">2.</span> Business Logic &amp; Policy <span class="badge badge-ok">🟢</span></h2>
+<p>순수 함수 <code>plan(workspaces, policy, now) → { actions, kept }</code> (<code>src/domain/policy.ts</code>). I/O 없음.</p>
+<table><thead><tr><th>순서</th><th>규칙</th><th>결과</th></tr></thead><tbody>
+<tr><td>1</td><td>pinned 또는 protect.paths/titles 매칭 워크스페이스</td><td>서브트리 전체 skip (<code>pinned</code>/<code>protected</code>)</td></tr>
+<tr><td>2</td><td>workspace idle = max(ws 활동, 모든 세션 활동) ≥ workspaceIdle</td><td>blocker(permanent·focused·busy 세션) 없으면 <code>archive-workspace</code>, 있으면 kept 후 3으로</td></tr>
+<tr><td>3</td><td>세션 idle ≥ sessionIdle, 활동시각 모름이면 <code>activity-unknown</code></td><td>busy·focused·protected title이면 kept, 아니면 후보</td></tr>
+<tr><td>4</td><td>살아남는 워크스페이스의 세션이 전부 후보</td><td>가장 최근 세션 하나는 <code>last-session</code>으로 유지</td></tr>
+</tbody></table>
+<h3>불변식 (Global Constraints)</h3>
+<ul>
+  <li>닫기 전에 항상 레코드 저장(<em>snapshot-before-close</em>).</li>
+  <li>레코드는 실제로 닫힌 것만 가리킨다: 닫기/아카이브 실패 → 레코드 삭제, 단 어댑터가 <code>PartialArchiveError</code>(일부 이미 닫힘)를 던지면 레코드 유지.</li>
+  <li>워크스페이스 캐스케이드는 세션 보호를 상속: busy·focused·protected·activity-unknown 세션이 하나라도 있으면 워크스페이스 통째 아카이브 금지.</li>
+  <li>workspaceIdle ≥ sessionIdle (config 검증).</li>
+  <li>sweep·restore·purge는 배타 lock(<code>link(2)</code>로 원자 게시, 죽은 pid면 동일 pid 재확인 후 회수). dry-run은 호스트도 ledger도 변경하지 않음.</li>
+  <li>purge는 <code>removeWorkspace</code> 구현 + 워크스페이스가 다시 살아있지 않음(inventory 확인) + git guard(uncommitted·untracked/stash/no-upstream/unpushed) 모두 통과해야만. ignored 파일은 삭제됨.</li>
+</ul>
+
+<h2 id="s3"><span class="num">3.</span> Error Handling <span class="badge badge-ok">🟢</span></h2>
+<table><thead><tr><th>상황</th><th>처리</th></tr></thead><tbody>
+<tr><td>호스트 미실행 (probe 실패)</td><td>그 호스트만 <code>unavailable</code> 보고, 다른 호스트 계속</td></tr>
+<tr><td>inventory 실패</td><td><code>failed</code> 보고, 종료코드 1</td></tr>
+<tr><td>개별 action 실패</td><td>failures[]에 기록, 나머지 계속, 종료코드 1</td></tr>
+<tr><td>스크롤백/agent 탐지 실패</td><td>무시하고 아카이브 진행(hasScrollback=false)</td></tr>
+<tr><td>Orca 내부 RPC 실패</td><td>확실히 미실행(method_not_found/unauthorized/연결 불가)일 때만 탭 닫기 폴백(mode=closed). 타임아웃·연결 끊김 같은 모호한 실패는 아무것도 닫지 않고 실패 보고</td></tr>
+<tr><td>복원 대상 워크트리 없음(Orca)</td><td>명확한 에러, 레코드는 archived 유지</td></tr>
+<tr><td>잘못된 config</td><td><code>ConfigError</code>: 파일·키·이유 표시</td></tr>
+<tr><td>CLI 사용법 오류</td><td>usage 출력, 종료코드 2</td></tr>
+</tbody></table>
+
+<h2 id="s4"><span class="num">4.</span> Architecture <span class="badge badge-ok">🟢</span></h2>
+<svg class="diagram" viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif" font-size="13">
+  <defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2563eb"/></marker></defs>
+  <rect x="300" y="10" width="160" height="44" rx="8" fill="#eff6ff" stroke="#2563eb"/><text x="380" y="37" text-anchor="middle">cli (composition root)</text>
+  <rect x="40" y="100" width="200" height="54" rx="8" fill="#fff" stroke="#78716c"/><text x="140" y="123" text-anchor="middle">app: Sweep / Restore / Purge</text><text x="140" y="142" text-anchor="middle" fill="#78716c" font-size="11">SessionCapturer · ObservedActivity</text>
+  <rect x="300" y="100" width="160" height="54" rx="8" fill="#fff" stroke="#78716c"/><text x="380" y="123" text-anchor="middle">domain</text><text x="380" y="142" text-anchor="middle" fill="#78716c" font-size="11">model · plan() (pure)</text>
+  <rect x="520" y="100" width="200" height="54" rx="8" fill="#fff" stroke="#78716c"/><text x="620" y="123" text-anchor="middle">hosts: registry</text><text x="620" y="142" text-anchor="middle" fill="#78716c" font-size="11">builtin + plugin import</text>
+  <rect x="40" y="200" width="680" height="40" rx="8" fill="#fafaf9" stroke="#2563eb" stroke-dasharray="5,3"/><text x="380" y="225" text-anchor="middle">ports: HostAdapter · ArchiveStore · AgentLocator · ActivityLedger · WorkspaceGuard</text>
+  <rect x="40" y="275" width="320" height="44" rx="8" fill="#fff" stroke="#78716c"/><text x="200" y="302" text-anchor="middle">infra: FsStore · FsLedger · Git · ClaudeLocator</text>
+  <rect x="400" y="275" width="320" height="44" rx="8" fill="#fff" stroke="#78716c"/><text x="560" y="302" text-anchor="middle">adapters: orca · cmux · (plugin) tmux</text>
+  <line x1="340" y1="54" x2="160" y2="98" stroke="#2563eb" marker-end="url(#a)"/>
+  <line x1="420" y1="54" x2="600" y2="98" stroke="#2563eb" marker-end="url(#a)"/>
+  <line x1="240" y1="127" x2="298" y2="127" stroke="#2563eb" marker-end="url(#a)"/>
+  <line x1="140" y1="154" x2="140" y2="198" stroke="#2563eb" marker-end="url(#a)"/>
+  <line x1="200" y1="273" x2="200" y2="242" stroke="#2563eb" marker-end="url(#a)"/>
+  <line x1="560" y1="273" x2="560" y2="242" stroke="#2563eb" marker-end="url(#a)"/>
+</svg>
+<p>의존은 안쪽으로만: domain ← app ← (ports) ← infra/adapters. <code>src/cli/app.ts</code>만 모든 구현체를 안다.</p>
+<table><thead><tr><th>Facade</th><th>파일</th><th>책임</th></tr></thead><tbody>
+<tr><td><code>SweepService.run</code></td><td>src/app/sweep.ts</td><td>probe → inventory → observe → plan → snapshot → close</td></tr>
+<tr><td><code>RestoreService.run</code></td><td>src/app/restore.ts</td><td>id prefix 해석 → adapter.restore → status 갱신</td></tr>
+<tr><td><code>PurgeService.run</code></td><td>src/app/purge.ts</td><td>grace 경과 + guard 통과 → removeWorkspace</td></tr>
+<tr><td><code>HostAdapter</code></td><td>src/ports/host-adapter.ts</td><td>호스트 1개의 전체 경계</td></tr>
+</tbody></table>
+
+<h2 id="s5"><span class="num">5.</span> Seams <span class="badge badge-ok">🟢</span></h2>
+<div class="seam"><p class="seam-title">app → HostAdapter</p><p class="seam-sub">가장 중요한 경계. 새 호스트 = 이 인터페이스 하나.</p>
+<h5>call-site</h5><pre><code>const workspaces = await adapter.inventory()
+const mode = await adapter.archiveWorkspace(workspace)   // 'native' | 'closed'
+await adapter.restore(record.workspace, record.mode === 'closed' ? specs : [])</code></pre>
+<h5>frozen signature</h5><pre><code>probe(): Promise&lt;Availability&gt;
+inventory(): Promise&lt;readonly WorkspaceState[]&gt;
+readScrollback(ws, session, lines): Promise&lt;string | undefined&gt;
+closeSession(ws, session): Promise&lt;void&gt;
+archiveWorkspace(ws): Promise&lt;ArchiveMode&gt;
+restore(snapshot, sessions: readonly SessionSpec[]): Promise&lt;void&gt;
+removeWorkspace?(snapshot): Promise&lt;void&gt;</code></pre>
+<h5>계약</h5><ul><li>payload: 정규화된 <code>WorkspaceState/SessionState</code>; <code>ref</code>는 코어에 불투명(어댑터가 핸들 인코딩)</li><li>소유: 호스트 상태는 어댑터, 판정은 domain, 기록은 store</li><li>보장: 모르는 활동시각은 undefined(발명 금지), native는 호스트가 세션 재개를 보장할 때만</li></ul></div>
+<div class="seam"><p class="seam-title">app → ArchiveStore</p><h5>frozen signature</h5><pre><code>save(record, scrollback: Map&lt;sessionRef,string&gt;) · update · remove · get · list(filter) · scrollback(id, ref) · lock(): Release</code></pre><h5>계약</h5><ul><li>레코드당 JSON 1개 + 스크롤백 텍스트, 원자적 쓰기</li><li>store가 파일 레이아웃 소유, id는 <code>[\w-]+</code>만 허용</li></ul></div>
+<div class="seam"><p class="seam-title">app → AgentLocator / ActivityLedger / WorkspaceGuard</p><pre><code>locate(session): Promise&lt;AgentSession | undefined&gt;          // 모호하면 undefined
+read(host) / write(host, Map&lt;ref, {fingerprint, since}&gt;)
+riskOf(path): Promise&lt;string | undefined&gt;                   // undefined = 삭제 안전</code></pre></div>
+<div class="seam"><p class="seam-title">registry → plugin module</p><pre><code>export const id = 'tmux'
+export const createAdapter: AdapterFactory = (options: HostConfig, { runner, env }) =&gt; HostAdapter
+// hosts.&lt;id&gt;의 나머지 키 → options.settings</code></pre></div>
+
+<h2 id="s6"><span class="num">6.</span> Contracts <span class="badge badge-ok">🟢</span></h2>
+<table class="contract-row"><tbody>
+<tr><th>SweepService.run</th><td><b>In</b> <code>{dryRun}</code> · <b>Out</b> host별 <code>HostReport</code>(ok: planned/kept/archived/failures | unavailable | failed) · <b>Pre</b> config 유효 · <b>Post</b> archived의 모든 레코드는 store에 존재, dry-run이면 호스트 무변경 · <b>Err</b> lock 보유 중이면 <code>StoreLockedError</code></td></tr>
+<tr><th>RestoreService.run</th><td><b>In</b> id 또는 유일 prefix · <b>Out</b> restored 레코드 · <b>Err</b> 없음/모호(<code>RecordNotFound/Ambiguous</code>), 이미 restored/purged, 호스트 비활성/미실행(<code>RestoreError</code>) · <b>Post</b> status=restored, restoredAt</td></tr>
+<tr><th>PurgeService.run</th><td><b>In</b> <code>{afterMs, dryRun}</code> · <b>Out</b> 레코드별 purged/would-purge/skipped(reason)/failed · <b>Post</b> purged만 status 변경</td></tr>
+<tr><th>parseConfig</th><td>기본값 병합(hosts는 기본 호스트와 merge), 모든 키 타입 검증, duration &gt; 0, title regex 컴파일 가능</td></tr>
+</tbody></table>
+
+<h2 id="s7"><span class="num">7.</span> Core Flows <span class="badge badge-ok">🟢</span></h2>
+<div class="flow"><h3>F1. Sweep</h3>
+<div class="slot"><h4>① 트리거</h4>launchd/cron(기본 15m) 또는 수동 <code>tabkeeper sweep</code></div>
+<div class="slot"><h4>② 워크플로우</h4>lock → 호스트별 probe → inventory → ObservedActivity(fingerprint→since) → plan → 각 action: capture(스크롤백 ∥ agent 탐지) → store.save → close/archive → report → (purge.enabled면) purge</div>
+<div class="slot"><h4>③ 입력</h4>호스트 CLI/소켓, Orca agent-hooks, cmux events.jsonl·sessions, ~/.claude/projects</div>
+<div class="slot"><h4>④ 결정</h4>전부 코드 결정론(plan). 외부/LLM 위임 없음 — 아카이브는 되돌릴 수 있어야 하고 설명 가능해야 하므로.</div>
+<div class="slot"><h4>⑤ 에러</h4>§3 참조. 호스트 단위 격리, action 단위 격리.</div>
+<div class="slot"><h4>⑥ 결과</h4>사이드바 정리 + <code>~/.local/share/tabkeeper/records/*.json</code></div>
+<div class="slot"><h4>⑦ 연결</h4>§5 HostAdapter, ArchiveStore, AgentLocator, ActivityLedger</div></div>
+<div class="flow"><h3>F2. Restore</h3>
+<div class="slot"><h4>①</h4><code>tabkeeper restore &lt;id-prefix&gt;</code></div>
+<div class="slot"><h4>②</h4>resolveRecord → status 확인 → probe → <code>adapter.restore(snapshot, mode==='closed' ? specs : [])</code> → status=restored</div>
+<div class="slot"><h4>④ 결정</h4>native면 호스트가 재개(Orca sleep의 세션 기억) — 중복 탭 방지. closed면 스냅샷 spec(title/cwd/url/resume command)으로 재생성.</div>
+<div class="slot"><h4>⑤</h4>워크스페이스가 사라졌으면: cmux/tmux는 재생성, Orca는 에러(워크트리 재생성은 사용자 몫)</div></div>
+<div class="flow"><h3>F3. Observed activity (fingerprint)</h3>
+<div class="slot"><h4>②</h4>어댑터가 화면 해시 제공 → ledger의 이전 해시와 같으면 since 유지, 다르면 now → lastActivityAt = max(호스트값, since)</div>
+<div class="slot"><h4>④</h4>첫 관측 시각부터 계산하므로 도입 직후엔 보수적(아무것도 idle 아님).</div></div>
+<div class="flow"><h3>F4. Purge (opt-in)</h3>
+<div class="slot"><h4>②</h4>archived·workspace·archivedAt ≤ now−after → capability 확인 → git guard → removeWorkspace(Orca: <code>worktree rm</code>, --force 없음) → status=purged</div></div>
+
+<h2 id="s8"><span class="num">8.</span> End-to-End <span class="badge badge-ok">🟢</span></h2>
+<ol>
+  <li>tmux 격리 서버: <code>stale</code>(창1), <code>proj</code>(old, fresh) 생성 → old에 MARKER 출력 → 2.5s 대기 → fresh만 활동</li>
+  <li><code>sweep</code> → old 창(session 레코드) + stale 세션(workspace 레코드) 아카이브, 남은 창은 <code>proj:fresh</code>뿐</li>
+  <li>old 레코드 스크롤백에 MARKER 존재</li>
+  <li>둘 다 restore → <code>proj:fresh, proj:old, stale:lonely</code> (원래 cwd)</li>
+</ol>
+<p>자동화: <code>test/e2e/tmux.e2e.test.ts</code>. 실 Orca에는 read-only dry-run으로 검증(52건 판정, pinned/main 보호, 현재 세션 busy 인식).</p>
+
+<h2 id="s9"><span class="num">9.</span> Testing <span class="badge badge-ok">🟢</span></h2>
+<table><thead><tr><th>레벨</th><th>대상</th></tr></thead><tbody>
+<tr><td>Unit (pure)</td><td>policy 전 규칙·보호, duration, config 검증</td></tr>
+<tr><td>Service</td><td>Sweep/Restore/Purge를 FakeAdapter + MemoryStore로 (실패·dry-run·native·locator·fingerprint)</td></tr>
+<tr><td>Infra</td><td>FsArchiveStore(라운드트립·lock 회수·path traversal), ledger, Claude locator(temp dir)</td></tr>
+<tr><td>Adapter</td><td>scriptedRunner로 실제 CLI argv 검증(Orca 탭 닫기·sleep 폴백·restore, cmux 생성/재사용)</td></tr>
+<tr><td>E2E</td><td>실제 tmux 서버, 플러그인 로딩 포함</td></tr>
+</tbody></table>
+
+<h2 id="s10"><span class="num">10.</span> Senior Review <span class="badge badge-ok">🟢</span></h2>
+<h3>10.1 워크스루</h3>
+<ol>
+  <li><b>진입점</b>: <code>SweepService.run({dryRun})</code> 하나. 결과는 호스트별 리포트.</li>
+  <li><b>분리</b>: 호스트 차이는 전부 <code>HostAdapter</code> 7개 메서드 뒤. 정책은 I/O 없는 <code>plan()</code>.</li>
+  <li><b>흐름</b>: inventory → observe → plan → snapshot-before-close.</li>
+  <li><b>계약</b>: native vs closed 모드가 restore의 중복을 막는 핵심 계약.</li>
+</ol>
+<h3>10.2 Q&amp;A</h3>
+<div class="qa"><p class="q">Q. Orca 내부 RPC(worktree.sleep)에 의존하는 건 위험하지 않나?</p><p class="a">A. 먼저 archive 플래그(숨김)를 걸고 sleep은 best-effort. 런타임이 확실히 도달 불가일 때만 탭 닫기로 폴백하고 mode를 closed로 기록하므로 기능은 유지된다. 소켓은 close/전체 타임아웃에서 반드시 settle. RPC 존재는 잘못된 selector로 호출해 method_not_found가 아닌 selector_not_found를 받는 방식으로 무해하게 검증했다. 장기적으로 Orca에 <code>worktree set --archived</code> 업스트림 PR이 정답.</p></div>
+<div class="qa"><p class="q">Q. 에이전트가 권한 프롬프트에서 대기 중이면?</p><p class="a">A. busy가 아니다(Orca waiting, cmux needsInput). 대신 idle 임계값을 넘겨야만 아카이브되고 resume으로 대화가 복구되므로 손실이 없다. working/blocked/running만 보호한다.</p></div>
+<div class="qa"><p class="q">Q. 모든 탭이 idle인데 워크스페이스가 permanent면 사이드바가 비지 않나?</p><p class="a">A. last-session 규칙으로 가장 최근 탭 하나를 남긴다.</p></div>
+
+<h3>10.3 독립 리뷰 반영 (2026-09-26)</h3>
+<ul>
+  <li>Orca RPC 무한대기 → close 핸들러 + 전체 타임아웃</li>
+  <li>아카이브 실패 시 레코드 불일치 → 삭제/PartialArchiveError 규칙</li>
+  <li>캐스케이드가 세션 보호 무시 → workspaceBlocker가 세션 보호 상속</li>
+  <li>purge가 재사용 중 워크트리 삭제 가능 → inventory 확인 + Orca는 ref 일치·isArchived 재확인</li>
+  <li>lock 경합 → link(2) 원자 게시, restore/purge도 lock</li>
+  <li>schedule 환경 유실 → config 절대경로 + 관련 env를 plist/cron에 고정</li>
+  <li>capabilities 중복 제거, 플러그인 계약을 ports/로 이동, 공개 API 보강</li>
+</ul>
+
+<h2 id="s11"><span class="num">11.</span> Open Questions <span class="badge badge-warn">🟡</span></h2>
+<ul>
+  <li><mark class="ambiguous">cmux 0.64 이전/이후 <code>workspace create</code> 출력 형식</mark> — JSON/텍스트 모두 파싱하도록 했으나 실 cmux(미실행)로는 mutating 검증 못 함.</li>
+  <li><mark class="ambiguous">Orca 업스트림 PR</mark> — <code>worktree set --archived</code> CLI 노출 제안 여부.</li>
+  <li>cmux 브라우저 탭 외 surface 타입(markdown 등)은 터미널로 복원됨 — 필요 시 SessionSpec에 kind 추가.</li>
+  <li>restore 비트랜잭션(부분 실패 후 재시도 시 중복 가능), sweep의 판정-닫기 사이 TOCTOU — README Known limitations에 명시.</li>
+  <li>npm 배포 이름 <code>tabkeeper</code>(2026-09-26 기준 미사용) 확정 여부.</li>
+</ul>
+</main>
+</div>
+</body>
+</html>
