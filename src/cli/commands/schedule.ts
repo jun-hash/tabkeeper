@@ -21,8 +21,9 @@ export const scheduleCommand: Command = {
     const [action] = context.positionals
     if (action !== 'install' && action !== 'uninstall') throw new UsageError('schedule needs "install" or "uninstall"')
 
-    const everyMs = parseDuration(typeof context.values.every === 'string' ? context.values.every : '15m')
-    const config = resolve(typeof context.values.config === 'string' ? context.values.config : configFile())
+    const every = context.option('every') ?? '15m'
+    const everyMs = parseDuration(every)
+    const config = resolve(context.option('config') ?? configFile())
     const invocation = sweepInvocation(process.execPath, resolve(process.argv[1] ?? 'tabkeeper'), config, process.env)
     const logFile = join(dataDir(), 'sweep.log')
 
@@ -51,7 +52,7 @@ export const scheduleCommand: Command = {
     await writeFile(plist, launchdPlist(LABEL, invocation, everyMs, logFile))
     const loaded = await execRunner('launchctl', ['bootstrap', domain, plist])
     if (loaded.exitCode !== 0) throw new Error(`launchctl bootstrap failed: ${loaded.stderr.trim()}`)
-    context.print(`Sweeping every ${context.values.every ?? '15m'} via ${plist}\nLogs: ${logFile}`)
+    context.print(`Sweeping every ${every} via ${plist}\nLogs: ${logFile}`)
     return 0
   },
 }

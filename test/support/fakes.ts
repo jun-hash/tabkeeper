@@ -1,4 +1,10 @@
-import type { ArchiveMode, ArchiveRecord, SessionState, WorkspaceSnapshot, WorkspaceState } from '../../src/domain/model.js'
+import type {
+  ArchiveMode,
+  ArchiveRecord,
+  SessionState,
+  WorkspaceSnapshot,
+  WorkspaceState,
+} from '../../src/domain/model.js'
 import type { CommandResult, CommandRunner } from '../../src/ports/command-runner.js'
 import type { ArchiveStore, RecordFilter, Release } from '../../src/ports/archive-store.js'
 import type { Availability, HostAdapter, SessionSpec } from '../../src/ports/host-adapter.js'

@@ -7,14 +7,7 @@ export interface Policy {
   readonly protectedTitles: readonly RegExp[]
 }
 
-export type Protection =
-  | 'pinned'
-  | 'protected'
-  | 'permanent'
-  | 'focused'
-  | 'busy'
-  | 'activity-unknown'
-  | 'last-session'
+export type Protection = 'pinned' | 'protected' | 'permanent' | 'focused' | 'busy' | 'activity-unknown' | 'last-session'
 
 export type Action =
   | { readonly kind: 'archive-workspace'; readonly workspace: WorkspaceState; readonly idleMs: number }

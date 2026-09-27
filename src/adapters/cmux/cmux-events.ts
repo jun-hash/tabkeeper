@@ -8,10 +8,7 @@ interface EventFrame {
   readonly surface_id?: string | null
 }
 
-/**
- * cmux has no activity timestamps, but its event log (`~/.cmuxterm/events.jsonl`) stamps every focus, prompt,
- * hook and notification with the workspace and surface it touched. Returns the newest stamp per lower-cased id.
- */
+/** cmux exposes no activity timestamps, but its event log stamps every focus, prompt, hook and notification. */
 export async function readLastEventTimes(path: string, tailBytes = DEFAULT_TAIL_BYTES): Promise<Map<string, number>> {
   const latest = new Map<string, number>()
   const text = await readTail(path, tailBytes).catch(() => '')

@@ -3,8 +3,16 @@
 
 const SHELLS = new Set(['bash', 'zsh', 'fish', 'sh', 'dash', 'nu', 'login'])
 const FIELDS = [
-  'session_id', 'session_name', 'session_path', 'session_attached',
-  'window_id', 'window_name', 'window_active', 'window_activity', 'pane_current_path', 'pane_current_command',
+  'session_id',
+  'session_name',
+  'session_path',
+  'session_attached',
+  'window_id',
+  'window_name',
+  'window_active',
+  'window_activity',
+  'pane_current_path',
+  'pane_current_command',
 ]
 
 /** @type {import('tabkeeper').HostPlugin['id']} */
@@ -82,18 +90,40 @@ export function createAdapter(options, { runner }) {
 
     async restore(snapshot, sessions) {
       const name = `=${snapshot.title}`
-      const exists = await tmux('has-session', '-t', name).then(() => true, () => false)
+      const exists = await tmux('has-session', '-t', name).then(
+        () => true,
+        () => false,
+      )
       const pending = [...sessions]
 
       if (!exists) {
         const first = pending.shift()
         const cwd = first?.cwd ?? snapshot.path
-        await tmux('new-session', '-d', '-s', snapshot.title, ...(cwd ? ['-c', cwd] : []), ...(first ? ['-n', first.title] : []))
+        await tmux(
+          'new-session',
+          '-d',
+          '-s',
+          snapshot.title,
+          ...(cwd ? ['-c', cwd] : []),
+          ...(first ? ['-n', first.title] : []),
+        )
         if (first) await sendCommand(`${name}:`, first.command)
       }
       for (const spec of pending) {
-        const window = (await tmux('new-window', '-d', '-P', '-F', '#{window_id}', '-t', `${name}:`, '-n', spec.title,
-          ...(spec.cwd ? ['-c', spec.cwd] : []))).trim()
+        const window = (
+          await tmux(
+            'new-window',
+            '-d',
+            '-P',
+            '-F',
+            '#{window_id}',
+            '-t',
+            `${name}:`,
+            '-n',
+            spec.title,
+            ...(spec.cwd ? ['-c', spec.cwd] : []),
+          )
+        ).trim()
         await sendCommand(window, spec.command)
       }
     },

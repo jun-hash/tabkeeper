@@ -29,12 +29,12 @@ export class OrcaAdapter implements HostAdapter {
   }
 
   async inventory(): Promise<readonly WorkspaceState[]> {
-    const [ps, list, hooks] = await Promise.all([
-      this.cli.json<{ worktrees: OrcaWorktree[] }>(['worktree', 'ps', '--limit', LIST_LIMIT]),
+    const [worktrees, list, hooks] = await Promise.all([
+      this.listWorktrees(),
       this.cli.json<{ terminals: OrcaTerminal[] }>(['terminal', 'list', '--limit', LIST_LIMIT]),
       this.readHooks(),
     ])
-    return toWorkspaces(ps.worktrees, list.terminals, hooks)
+    return toWorkspaces(worktrees, list.terminals, hooks)
   }
 
   async readScrollback(_workspace: WorkspaceState, session: SessionState, lines: number): Promise<string | undefined> {
@@ -54,10 +54,7 @@ export class OrcaAdapter implements HostAdapter {
     await this.cli.json(['terminal', 'close', '--terminal', handle, '--tab'])
   }
 
-  /**
-   * Hides the worktree with Orca's archive flag, then puts it to sleep so Orca remembers its agent sessions.
-   * Only when the runtime certainly did not run the call does it fall back to closing tabs one by one.
-   */
+  /** Falls back to closing tabs only when the runtime certainly did not act, never after an ambiguous failure. */
   async archiveWorkspace(workspace: WorkspaceState): Promise<ArchiveMode> {
     try {
       await this.setArchived(workspace.ref, true)
@@ -82,11 +79,9 @@ export class OrcaAdapter implements HostAdapter {
   }
 
   async removeWorkspace(snapshot: WorkspaceSnapshot): Promise<void> {
-    const worktree = await this.findWorktree(snapshot)
-    if (worktree.worktreeId !== snapshot.ref.replace(/^id:/, '') || !worktree.isArchived) {
-      throw new Error(`"${snapshot.title}" is in use again; not removing it.`)
-    }
-    await this.cli.json(['worktree', 'rm', '--worktree', worktreeSelector(worktree.worktreeId)])
+    const worktree = (await this.listWorktrees()).find((w) => worktreeSelector(w.worktreeId) === snapshot.ref)
+    if (!worktree?.isArchived) throw new Error(`"${snapshot.title}" is gone or in use again; not removing it.`)
+    await this.cli.json(['worktree', 'rm', '--worktree', snapshot.ref])
   }
 
   private async closeAll(workspace: WorkspaceState): Promise<void> {
@@ -96,18 +91,24 @@ export class OrcaAdapter implements HostAdapter {
         await this.closeSession(workspace, session)
         closed++
       } catch (error) {
-        if (closed > 0) throw new PartialArchiveError(`closed ${closed} of ${workspace.sessions.length} tabs: ${messageOf(error)}`)
+        if (closed > 0)
+          throw new PartialArchiveError(`closed ${closed} of ${workspace.sessions.length} tabs: ${messageOf(error)}`)
         throw error
       }
     }
   }
 
+  private async listWorktrees(): Promise<readonly OrcaWorktree[]> {
+    return (await this.cli.json<{ worktrees: OrcaWorktree[] }>(['worktree', 'ps', '--limit', LIST_LIMIT])).worktrees
+  }
+
   private async findWorktree(snapshot: WorkspaceSnapshot): Promise<OrcaWorktree> {
-    const { worktrees } = await this.cli.json<{ worktrees: OrcaWorktree[] }>(['worktree', 'ps', '--limit', LIST_LIMIT])
+    const worktrees = await this.listWorktrees()
     const match =
       worktrees.find((w) => worktreeSelector(w.worktreeId) === snapshot.ref) ??
       worktrees.find((w) => snapshot.path !== undefined && w.path === snapshot.path)
-    if (!match) throw new Error(`Orca no longer has the worktree "${snapshot.title}" (${snapshot.path ?? snapshot.ref}).`)
+    if (!match)
+      throw new Error(`Orca no longer has the worktree "${snapshot.title}" (${snapshot.path ?? snapshot.ref}).`)
     return match
   }
 
@@ -117,7 +118,9 @@ export class OrcaAdapter implements HostAdapter {
 
   private async readHooks(): Promise<ReadonlyMap<string, AgentSession>> {
     try {
-      const file = JSON.parse(await readFile(this.hookStatusPath, 'utf8')) as { entries?: Record<string, OrcaHookEntry> }
+      const file = JSON.parse(await readFile(this.hookStatusPath, 'utf8')) as {
+        entries?: Record<string, OrcaHookEntry>
+      }
       return toHookSessions(file.entries ?? {})
     } catch {
       return new Map()

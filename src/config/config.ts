@@ -15,7 +15,6 @@ export interface Config {
   readonly protect: { readonly paths: readonly string[]; readonly titles: readonly string[] }
   readonly purge: { readonly enabled: boolean; readonly afterMs: number }
   readonly hosts: Readonly<Record<string, HostConfig>>
-  /** Module specifiers exporting `createAdapter` — how third-party hosts plug in. */
   readonly plugins: readonly string[]
 }
 

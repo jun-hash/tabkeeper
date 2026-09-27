@@ -2,10 +2,7 @@ import type { HostId, SessionState, WorkspaceState } from '../domain/model.js'
 import type { ActivityLedger, Observation } from '../ports/activity-ledger.js'
 import { maxDefined } from '../shared/collections.js'
 
-/**
- * Turns content fingerprints into activity timestamps: a session counts as active since the first sweep
- * that saw its current content. Sessions without a fingerprint pass through untouched.
- */
+/** A fingerprinted session counts as active since the first sweep that saw its current content. */
 export class ObservedActivity {
   constructor(
     private readonly ledger: ActivityLedger,

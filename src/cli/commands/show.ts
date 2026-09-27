@@ -16,17 +16,23 @@ export const showCommand: Command = {
     const app = await context.app()
     const record = await resolveRecord(app.store, query)
 
-    const scrollback =
-      context.values.scrollback === true
-        ? await Promise.all(record.sessions.map(async (s) => ({ session: s.title, text: (await app.store.scrollback(record.id, s.ref)) ?? '' })))
-        : []
+    const scrollback = context.flag('scrollback')
+      ? await Promise.all(
+          record.sessions.map(async (s) => ({
+            session: s.title,
+            text: (await app.store.scrollback(record.id, s.ref)) ?? '',
+          })),
+        )
+      : []
 
     if (context.json) {
       printJson(context, { record, scrollback })
       return 0
     }
     context.print(renderRecord(record, Date.now()))
-    for (const { session, text } of scrollback) context.print(`\n──── ${session} ────\n${text || '(empty)'}`)
+    for (const { session, text } of scrollback) {
+      context.print(`\n──── ${session} ────\n${text || '(empty)'}`)
+    }
     return 0
   },
 }

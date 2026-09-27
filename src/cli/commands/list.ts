@@ -12,10 +12,10 @@ export const listCommand: Command = {
   },
   async run(context) {
     const app = await context.app()
-    const host = typeof context.values.host === 'string' ? context.values.host : undefined
+    const host = context.option('host')
     const records = await app.store.list({
       ...(host !== undefined && { host }),
-      ...(context.values.all !== true && { status: 'archived' as const }),
+      ...(!context.flag('all') && { status: 'archived' as const }),
     })
     if (context.json) printJson(context, records)
     else context.print(renderRecords(records, Date.now()))

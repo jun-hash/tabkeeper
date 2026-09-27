@@ -5,7 +5,10 @@ export const HOUR = 3_600_000
 export const DAY = 24 * HOUR
 export const NOW = Date.UTC(2026, 8, 25, 12)
 
-type SessionOverrides = Omit<Partial<SessionState>, 'lastActivityAt'> & { ref: string; lastActivityAt?: number | undefined }
+type SessionOverrides = Omit<Partial<SessionState>, 'lastActivityAt'> & {
+  ref: string
+  lastActivityAt?: number | undefined
+}
 
 export function session(overrides: SessionOverrides): SessionState {
   const { lastActivityAt, ...rest } = overrides

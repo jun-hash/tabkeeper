@@ -16,6 +16,5 @@ export interface ArchiveStore {
   get(id: string): Promise<ArchiveRecord | undefined>
   list(filter?: RecordFilter): Promise<readonly ArchiveRecord[]>
   scrollback(id: string, sessionRef: string): Promise<string | undefined>
-  /** Acquires an exclusive lock so overlapping sweeps (e.g. cron + manual) never race. */
   lock(): Promise<Release>
 }

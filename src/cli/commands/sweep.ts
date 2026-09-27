@@ -12,16 +12,16 @@ export const sweepCommand: Command = {
     verbose: { type: 'boolean', short: 'v' },
   },
   async run(context) {
-    const dryRun = context.values['dry-run'] === true
-    const host = context.values.host
-    const app = await context.app(typeof host === 'string' ? { hosts: [host] } : {})
+    const dryRun = context.flag('dry-run')
+    const host = context.option('host')
+    const app = await context.app(host ? { hosts: [host] } : {})
 
     const reports = await app.sweep.run({ dryRun })
     const purged = app.config.purge.enabled ? await app.purge.run({ afterMs: app.config.purge.afterMs, dryRun }) : []
 
     if (context.json) printJson(context, { reports, purged })
     else {
-      context.print(renderSweep(reports, dryRun, context.values.verbose === true))
+      context.print(renderSweep(reports, dryRun, context.flag('verbose')))
       if (app.config.purge.enabled) context.print(`\npurge:\n${renderPurge(purged)}`)
     }
     const failed = reports.some((r) => r.status === 'failed' || (r.status === 'ok' && r.failures.length > 0))

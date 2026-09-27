@@ -30,7 +30,10 @@ export class CmuxAdapter implements HostAdapter {
     const tree = await this.cli.json<CmuxTree>(['tree', '--all'])
     const [details, agents, lastEventAt, fingerprints] = await Promise.all([
       this.readDetails(tree),
-      this.cli.json<{ sessions: CmuxAgentSession[] }>(['sessions', 'list', '--all']).then((r) => r.sessions, () => []),
+      this.cli.json<{ sessions: CmuxAgentSession[] }>(['sessions', 'list', '--all']).then(
+        (r) => r.sessions,
+        () => [],
+      ),
       readLastEventTimes(this.eventsPath),
       this.fingerprint(tree),
     ])
@@ -40,7 +43,14 @@ export class CmuxAdapter implements HostAdapter {
   async readScrollback(workspace: WorkspaceState, session: SessionState, lines: number): Promise<string | undefined> {
     if (session.url !== undefined) return undefined
     const screen = await this.cli.json<CmuxScreen>([
-      'read-screen', '--workspace', workspace.ref, '--surface', session.ref, '--scrollback', '--lines', String(lines),
+      'read-screen',
+      '--workspace',
+      workspace.ref,
+      '--surface',
+      session.ref,
+      '--scrollback',
+      '--lines',
+      String(lines),
     ])
     return screen.text?.trim() ? screen.text : undefined
   }
@@ -65,8 +75,16 @@ export class CmuxAdapter implements HostAdapter {
     const [first, ...rest] = sessions
     const cwd = first?.cwd ?? snapshot.path
     const output = await this.cli.exec([
-      '--json', '--id-format', 'uuids', 'workspace', 'create', '--name', snapshot.title,
-      ...(cwd ? ['--cwd', cwd] : []), '--focus', 'false',
+      '--json',
+      '--id-format',
+      'uuids',
+      'workspace',
+      'create',
+      '--name',
+      snapshot.title,
+      ...(cwd ? ['--cwd', cwd] : []),
+      '--focus',
+      'false',
     ])
     const created = parseCreated(output)
     const workspaceId = required(created.workspace, 'workspace', output)
@@ -85,7 +103,15 @@ export class CmuxAdapter implements HostAdapter {
     }
     const cwd = spec.cwd ? ['--working-directory', spec.cwd] : []
     const output = await this.cli.exec([
-      '--json', '--id-format', 'uuids', 'new-surface', '--workspace', workspaceId, '--type', 'terminal', ...cwd,
+      '--json',
+      '--id-format',
+      'uuids',
+      'new-surface',
+      '--workspace',
+      workspaceId,
+      '--type',
+      'terminal',
+      ...cwd,
     ])
     await this.prepare(workspaceId, required(parseCreated(output).surface, 'surface', output), spec)
   }
@@ -109,7 +135,6 @@ export class CmuxAdapter implements HostAdapter {
     return new Map(lists.flat().map((d) => [normalizeId(d.id), d]))
   }
 
-  /** Hashes each terminal's visible screen so tabkeeper can tell when it last changed. */
   private async fingerprint(tree: CmuxTree): Promise<Map<string, string>> {
     const targets = treeWorkspaces(tree).flatMap((w) =>
       treeSurfaces(w)
@@ -138,9 +163,13 @@ interface CreatedHandles {
 export function parseCreated(output: string): CreatedHandles {
   try {
     const json = JSON.parse(output) as { workspace_id?: string; surface_id?: string }
-    return { ...(json.workspace_id && { workspace: json.workspace_id }), ...(json.surface_id && { surface: json.surface_id }) }
+    return {
+      ...(json.workspace_id && { workspace: json.workspace_id }),
+      ...(json.surface_id && { surface: json.surface_id }),
+    }
   } catch {
-    const find = (kind: string) => output.match(new RegExp(`${kind}[=:\\s]+(${UUID})`, 'i'))?.[1] ?? output.match(new RegExp(`${kind}:\\d+`))?.[0]
+    const find = (kind: string) =>
+      output.match(new RegExp(`${kind}[=:\\s]+(${UUID})`, 'i'))?.[1] ?? output.match(new RegExp(`${kind}:\\d+`))?.[0]
     const workspace = find('workspace')
     const surface = find('surface')
     return { ...(workspace && { workspace }), ...(surface && { surface }) }

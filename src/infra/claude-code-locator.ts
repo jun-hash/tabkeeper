@@ -7,9 +7,8 @@ import { agentSession } from '../shared/agent-resume.js'
 const DEFAULT_TOLERANCE_MS = 2 * 60_000
 
 /**
- * Claude Code writes each conversation to `~/.claude/projects/<realpath(cwd), non-alphanumerics as "-">/<id>.jsonl`.
- * A terminal is matched to a conversation only when exactly one transcript in its cwd was last written
- * around the terminal's last output — ambiguity yields no match rather than resuming the wrong chat.
+ * Matches only when exactly one transcript was written around the terminal's last output:
+ * resuming the wrong conversation is worse than resuming none.
  */
 export class ClaudeCodeLocator implements AgentLocator {
   constructor(

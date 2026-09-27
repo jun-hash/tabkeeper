@@ -1,7 +1,6 @@
 import { execFile } from 'node:child_process'
 import type { CommandResult, CommandRunner, RunOptions } from '../ports/command-runner.js'
 
-
 export class CommandError extends Error {
   constructor(
     readonly command: string,
@@ -32,8 +31,12 @@ export const execRunner: CommandRunner = (command, args, options = {}) =>
     )
   })
 
-/** Runs a command and fails on a non-zero exit. */
-export async function runChecked(runner: CommandRunner, command: string, args: readonly string[], options?: RunOptions): Promise<string> {
+export async function runChecked(
+  runner: CommandRunner,
+  command: string,
+  args: readonly string[],
+  options?: RunOptions,
+): Promise<string> {
   const result = await runner(command, args, options)
   if (result.exitCode !== 0) throw new CommandError(command, args, result)
   return result.stdout

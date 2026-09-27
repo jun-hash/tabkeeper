@@ -10,7 +10,6 @@ export class OrcaError extends Error {
   }
 }
 
-/** Thin typed wrapper over `orca <command> --json`, which always answers with an `{ ok, result | error }` envelope. */
 export class OrcaCli {
   constructor(
     private readonly runner: CommandRunner,

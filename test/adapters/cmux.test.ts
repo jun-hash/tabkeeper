@@ -40,13 +40,30 @@ const tree: CmuxTree = {
 describe('cmux mapping', () => {
   it('builds sessions from the tree, agent records, events and fingerprints', () => {
     const [ws] = toWorkspaces(tree, {
-      details: new Map([[WS.toLowerCase(), { id: WS, current_directory: '/work/api', latest_submitted_at: '2026-09-25T10:00:00Z' }]]),
-      agents: [{ agent: 'claude', session_id: 'c-9', surface_id: TERM, agent_lifecycle: 'running', updated_at_unix: 1_000, active_for_surface: true }],
+      details: new Map([
+        [WS.toLowerCase(), { id: WS, current_directory: '/work/api', latest_submitted_at: '2026-09-25T10:00:00Z' }],
+      ]),
+      agents: [
+        {
+          agent: 'claude',
+          session_id: 'c-9',
+          surface_id: TERM,
+          agent_lifecycle: 'running',
+          updated_at_unix: 1_000,
+          active_for_surface: true,
+        },
+      ],
       lastEventAt: new Map([[TERM.toLowerCase(), 2_000_000]]),
       fingerprints: new Map([[TERM.toLowerCase(), 'hash']]),
     })
 
-    expect(ws).toMatchObject({ ref: WS, title: 'api', path: '/work/api', focused: true, lastActivityAt: Date.parse('2026-09-25T10:00:00Z') })
+    expect(ws).toMatchObject({
+      ref: WS,
+      title: 'api',
+      path: '/work/api',
+      focused: true,
+      lastActivityAt: Date.parse('2026-09-25T10:00:00Z'),
+    })
     expect(ws?.sessions[0]).toMatchObject({
       ref: TERM,
       cwd: '/work/api',

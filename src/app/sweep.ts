@@ -6,7 +6,7 @@ import { formatDuration } from '../shared/duration.js'
 import { messageOf } from '../shared/errors.js'
 import type { IdFactory } from './ids.js'
 import type { ObservedActivity } from './observed-activity.js'
-import { toWorkspaceSnapshot, type SessionCapturer } from './snapshot.js'
+import { toWorkspaceSnapshot, type SessionCapturer } from './session-capturer.js'
 
 export interface SweepDeps {
   readonly adapters: readonly HostAdapter[]

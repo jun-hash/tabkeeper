@@ -10,10 +10,7 @@ interface RuntimeMetadata {
   readonly transports: readonly { readonly kind: string; readonly endpoint: string }[]
 }
 
-/**
- * Speaks the Orca runtime's newline-delimited JSON protocol directly, for methods the `orca` CLI does not expose
- * (`worktree.sleep`, `worktree.set { isArchived }`). These are internal, so callers must tolerate failures.
- */
+/** Reaches internal runtime methods the `orca` CLI does not expose; they may change, so callers tolerate failure. */
 export class OrcaRuntime {
   constructor(
     private readonly userDataDir: string,
@@ -42,11 +39,16 @@ export class OrcaRuntime {
         socket.destroy()
         settle()
       }
-      const timer = setTimeout(() => finish(() => reject(new OrcaError('runtime_timeout', 'no response'))), this.timeoutMs)
+      const timer = setTimeout(
+        () => finish(() => reject(new OrcaError('runtime_timeout', 'no response'))),
+        this.timeoutMs,
+      )
 
       socket.setEncoding('utf8')
       socket.on('error', (error) => finish(() => reject(error)))
-      socket.on('close', () => finish(() => reject(new OrcaError('runtime_closed', 'connection closed without a reply'))))
+      socket.on('close', () =>
+        finish(() => reject(new OrcaError('runtime_closed', 'connection closed without a reply'))),
+      )
       socket.on('connect', () => socket.write(`${JSON.stringify(request)}\n`))
       socket.on('data', (chunk: string) => {
         buffer += chunk

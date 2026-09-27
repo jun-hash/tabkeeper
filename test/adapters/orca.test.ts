@@ -41,7 +41,11 @@ describe('orca mapping', () => {
   it('groups panes into one session per tab and derives activity from terminal output', () => {
     const [ws] = toWorkspaces(
       [worktree()],
-      [terminal('t1', 'tab-a', { lastOutputAt: 3_000 }), terminal('t2', 'tab-a', { lastOutputAt: 4_500 }), terminal('t3', 'tab-b')],
+      [
+        terminal('t1', 'tab-a', { lastOutputAt: 3_000 }),
+        terminal('t2', 'tab-a', { lastOutputAt: 4_500 }),
+        terminal('t3', 'tab-b'),
+      ],
       new Map(),
     )
 
@@ -112,9 +116,18 @@ describe('OrcaAdapter', () => {
 
   it('reports the runtime error when Orca is not running', async () => {
     const { orca } = adapter({
-      status: () => ({ exitCode: 1, stdout: JSON.stringify({ ok: false, error: { code: 'runtime_unavailable', message: 'Start the Orca app first.' } }) }),
+      status: () => ({
+        exitCode: 1,
+        stdout: JSON.stringify({
+          ok: false,
+          error: { code: 'runtime_unavailable', message: 'Start the Orca app first.' },
+        }),
+      }),
     })
-    expect(await orca.probe()).toEqual({ available: false, reason: 'orca: Start the Orca app first. (runtime_unavailable)' })
+    expect(await orca.probe()).toEqual({
+      available: false,
+      reason: 'orca: Start the Orca app first. (runtime_unavailable)',
+    })
   })
 
   it('closes a whole tab through any of its pane handles', async () => {
@@ -130,7 +143,10 @@ describe('OrcaAdapter', () => {
     const ws = toWorkspaces([worktree()], [terminal('t1', 'tab-a')], new Map())[0]!
 
     expect(await orca.archiveWorkspace(ws)).toBe('native')
-    expect(rpc).toEqual([`worktree.set {"worktree":"id:${WT}","isArchived":true}`, `worktree.sleep {"worktree":"id:${WT}"}`])
+    expect(rpc).toEqual([
+      `worktree.set {"worktree":"id:${WT}","isArchived":true}`,
+      `worktree.sleep {"worktree":"id:${WT}"}`,
+    ])
     expect(calls).toEqual([])
   })
 
@@ -159,7 +175,12 @@ describe('OrcaAdapter', () => {
   it('reports a partial close when some tabs were already closed', async () => {
     let closes = 0
     const { orca } = adapter(
-      { 'terminal close': () => (++closes === 1 ? ok({}) : { exitCode: 1, stdout: JSON.stringify({ ok: false, error: { code: 'x', message: 'boom' } }) }) },
+      {
+        'terminal close': () =>
+          ++closes === 1
+            ? ok({})
+            : { exitCode: 1, stdout: JSON.stringify({ ok: false, error: { code: 'x', message: 'boom' } }) },
+      },
       failing('runtime_unavailable'),
     )
     const ws = toWorkspaces([worktree()], [terminal('t1', 'tab-a'), terminal('t2', 'tab-b')], new Map())[0]!
@@ -169,7 +190,9 @@ describe('OrcaAdapter', () => {
 
   it('refuses to remove a worktree that is no longer archived', async () => {
     const { orca, calls } = adapter({ 'worktree ps': () => ok({ worktrees: [worktree({ isArchived: false })] }) })
-    await expect(orca.removeWorkspace({ ref: `id:${WT}`, title: 'Feature', path: '/work/feature' })).rejects.toThrow('in use again')
+    await expect(orca.removeWorkspace({ ref: `id:${WT}`, title: 'Feature', path: '/work/feature' })).rejects.toThrow(
+      'in use again',
+    )
     expect(calls.some((c) => c.includes('rm'))).toBe(false)
   })
 
@@ -186,7 +209,18 @@ describe('OrcaAdapter', () => {
 
     expect(rpc).toEqual([`worktree.set {"worktree":"id:${WT}","isArchived":false}`])
     expect(calls.slice(1)).toEqual([
-      ['orca', 'terminal', 'create', '--worktree', `id:${WT}`, '--title', 'Fix login', '--command', 'claude --resume c-1', '--json'],
+      [
+        'orca',
+        'terminal',
+        'create',
+        '--worktree',
+        `id:${WT}`,
+        '--title',
+        'Fix login',
+        '--command',
+        'claude --resume c-1',
+        '--json',
+      ],
       ['orca', 'terminal', 'create', '--worktree', `id:${WT}`, '--title', 'Shell', '--json'],
     ])
   })

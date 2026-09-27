@@ -4,7 +4,7 @@ import { timeSortableId } from '../app/ids.js'
 import { ObservedActivity } from '../app/observed-activity.js'
 import { PurgeService } from '../app/purge.js'
 import { RestoreService } from '../app/restore.js'
-import { SessionCapturer } from '../app/snapshot.js'
+import { SessionCapturer } from '../app/session-capturer.js'
 import { SweepService } from '../app/sweep.js'
 import { loadConfig, toPolicy, type Config } from '../config/config.js'
 import { configFile, dataDir } from '../config/paths.js'
@@ -34,7 +34,6 @@ export interface AppOptions {
   readonly hosts?: readonly string[]
 }
 
-/** Composition root: the only place that knows every concrete implementation. */
 export async function createApp(options: AppOptions = {}): Promise<App> {
   const env = process.env
   const configPath = options.configPath ?? configFile(env)

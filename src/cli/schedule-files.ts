@@ -13,7 +13,6 @@ export interface Invocation {
   readonly env: Readonly<Record<string, string>>
 }
 
-/** Everything a scheduler needs to run the same sweep this shell would, with no shell state to rely on. */
 export function sweepInvocation(
   node: string,
   script: string,
@@ -36,7 +35,8 @@ export function cronLine(invocation: Invocation, everyMs: number, logFile: strin
 }
 
 export function launchdPlist(label: string, invocation: Invocation, everyMs: number, logFile: string): string {
-  const strings = (items: readonly string[], indent: string) => items.map((s) => `${indent}<string>${escapeXml(s)}</string>`).join('\n')
+  const strings = (items: readonly string[], indent: string) =>
+    items.map((s) => `${indent}<string>${escapeXml(s)}</string>`).join('\n')
   const env = Object.entries(invocation.env)
     .map(([k, v]) => `    <key>${escapeXml(k)}</key>\n    <string>${escapeXml(v)}</string>`)
     .join('\n')

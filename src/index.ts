@@ -24,7 +24,7 @@ export { SweepService, type ActionFailure, type HostReport, type SweepDeps, type
 export { RestoreError, RestoreService, type RestoreDeps } from './app/restore.js'
 export { PurgeService, type PurgeDeps, type PurgeOptions, type PurgeOutcome } from './app/purge.js'
 export { AmbiguousRecordError, RecordNotFoundError, resolveRecord } from './app/records.js'
-export { SessionCapturer } from './app/snapshot.js'
+export { SessionCapturer } from './app/session-capturer.js'
 export { ObservedActivity } from './app/observed-activity.js'
 export { timeSortableId, type IdFactory } from './app/ids.js'
 

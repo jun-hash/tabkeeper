@@ -48,9 +48,14 @@ export async function main(argv: readonly string[]): Promise<number> {
       process.stdout.write(`${command.summary}\n\nUsage: ${command.usage}\n`)
       return 0
     }
-    const configPath = typeof values.config === 'string' ? values.config : undefined
+    const option = (name: string) => {
+      const value = (values as Record<string, unknown>)[name]
+      return typeof value === 'string' ? value : undefined
+    }
+    const configPath = option('config')
     return await command.run({
-      values: values as Record<string, string | boolean | undefined>,
+      flag: (name) => (values as Record<string, unknown>)[name] === true,
+      option,
       positionals,
       json: values.json === true,
       app: (overrides = {}) => createApp({ ...overrides, ...(configPath !== undefined && { configPath }) }),

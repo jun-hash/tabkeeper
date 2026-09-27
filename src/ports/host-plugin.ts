@@ -14,7 +14,7 @@ export interface AdapterContext {
 
 export type AdapterFactory = (options: HostOptions, context: AdapterContext) => HostAdapter
 
-/** Shape a plugin module must export to add a host (`plugins: ["tabkeeper-zellij"]` in the config). */
+/** What a module listed under `plugins` must export. */
 export interface HostPlugin {
   readonly id: string
   readonly createAdapter: AdapterFactory

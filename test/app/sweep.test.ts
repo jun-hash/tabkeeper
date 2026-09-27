@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ObservedActivity } from '../../src/app/observed-activity.js'
-import { SessionCapturer } from '../../src/app/snapshot.js'
+import { SessionCapturer } from '../../src/app/session-capturer.js'
 import { SweepService } from '../../src/app/sweep.js'
 import type { AgentLocator } from '../../src/ports/agent-locator.js'
 import { PartialArchiveError } from '../../src/ports/host-adapter.js'
@@ -69,7 +69,8 @@ describe('SweepService', () => {
   it('attaches the agent conversation found by a locator', async () => {
     const adapter = new FakeAdapter('fake', [workspace({ ref: 'w', sessions: [idleSession, liveSession] })])
     const locator: AgentLocator = {
-      locate: async (s) => (s.ref === 's-idle' ? { tool: 'claude', sessionId: 'abc', resumeCommand: 'claude --resume abc' } : undefined),
+      locate: async (s) =>
+        s.ref === 's-idle' ? { tool: 'claude', sessionId: 'abc', resumeCommand: 'claude --resume abc' } : undefined,
     }
     const { store, service } = setup([adapter], [locator])
 
@@ -156,7 +157,9 @@ describe('SweepService', () => {
 
   it('does not record observations on a dry run', async () => {
     const ledger = new MemoryLedger()
-    const adapter = new FakeAdapter('fake', [workspace({ ref: 'w', sessions: [session({ ref: 's', fingerprint: 'f' })] })])
+    const adapter = new FakeAdapter('fake', [
+      workspace({ ref: 'w', sessions: [session({ ref: 's', fingerprint: 'f' })] }),
+    ])
     const service = new SweepService({
       adapters: [adapter],
       store: new MemoryStore(),

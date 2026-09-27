@@ -20,7 +20,6 @@ export type PurgeOutcome =
   | { readonly record: ArchiveRecord; readonly result: 'purged' | 'would-purge' }
   | { readonly record: ArchiveRecord; readonly result: 'skipped' | 'failed'; readonly reason: string }
 
-/** Deletes the checkouts of workspaces that stayed archived past the grace period — opt-in only. */
 export class PurgeService {
   constructor(private readonly deps: PurgeDeps) {}
 
@@ -47,7 +46,6 @@ export class PurgeService {
     }
   }
 
-  /** Refs of workspaces the host currently shows, or why the host could not be asked. */
   private async liveWorkspaces(host: string): Promise<ReadonlySet<string> | string> {
     const adapter = this.deps.adapters.get(host)
     if (!adapter) return `${host} is not enabled`
@@ -60,7 +58,11 @@ export class PurgeService {
     }
   }
 
-  private async purgeOne(record: ArchiveRecord, live: ReadonlySet<string> | string, dryRun: boolean): Promise<PurgeOutcome> {
+  private async purgeOne(
+    record: ArchiveRecord,
+    live: ReadonlySet<string> | string,
+    dryRun: boolean,
+  ): Promise<PurgeOutcome> {
     const adapter = this.deps.adapters.get(record.host)
     const path = record.workspace.path
     if (!adapter?.removeWorkspace) {

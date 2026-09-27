@@ -10,21 +10,14 @@ export function renderSweep(reports: readonly HostReport[], dryRun: boolean, ver
 
 export function renderRecords(records: readonly ArchiveRecord[], now: number): string {
   if (records.length === 0) return 'No archives.'
-  const rows = records.map((r) => [
-    r.id,
-    r.host,
-    r.kind,
-    r.status,
-    `${formatDuration(now - r.archivedAt)} ago`,
-    describeRecord(r),
-  ])
+  const rows = records.map((r) => [r.id, r.host, r.kind, r.status, ago(r.archivedAt, now), describeRecord(r)])
   return table(['ID', 'HOST', 'KIND', 'STATUS', 'ARCHIVED', 'TARGET'], rows)
 }
 
 export function renderRecord(record: ArchiveRecord, now: number): string {
   const lines = [
     `${record.id}  ${record.kind} on ${record.host} — ${record.status}`,
-    `archived   ${new Date(record.archivedAt).toISOString()} (${formatDuration(now - record.archivedAt)} ago, ${record.reason})`,
+    `archived   ${new Date(record.archivedAt).toISOString()} (${ago(record.archivedAt, now)}, ${record.reason})`,
     `workspace  ${record.workspace.title}${record.workspace.path ? `  ${record.workspace.path}` : ''}`,
     `mode       ${record.mode === 'native' ? `suspended by ${record.host}` : 'closed by tabkeeper'}`,
   ]
@@ -38,8 +31,15 @@ export function renderRecord(record: ArchiveRecord, now: number): string {
 export function renderPurge(outcomes: readonly PurgeOutcome[]): string {
   if (outcomes.length === 0) return 'Nothing to purge.'
   return outcomes
-    .map((o) => `${o.result.padEnd(11)} ${o.record.id}  ${describeRecord(o.record)}${'reason' in o ? `  (${o.reason})` : ''}`)
+    .map(
+      (o) =>
+        `${o.result.padEnd(11)} ${o.record.id}  ${describeRecord(o.record)}${'reason' in o ? `  (${o.reason})` : ''}`,
+    )
     .join('\n')
+}
+
+function ago(timestamp: number, now: number): string {
+  return `${formatDuration(now - timestamp)} ago`
 }
 
 function renderHost(report: HostReport, dryRun: boolean, verbose: boolean): string {
@@ -68,7 +68,9 @@ function describeAction(action: Action): string {
 }
 
 function describeKept(kept: Kept): string {
-  const target = kept.session ? `session "${kept.session.title}" in "${kept.workspace.title}"` : `workspace "${kept.workspace.title}"`
+  const target = kept.session
+    ? `session "${kept.session.title}" in "${kept.workspace.title}"`
+    : `workspace "${kept.workspace.title}"`
   return `${target} — ${kept.protection}`
 }
 

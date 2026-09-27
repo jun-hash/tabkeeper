@@ -4,7 +4,8 @@ import type { App, AppOptions } from './app.js'
 export type OptionSpec = NonNullable<ParseArgsConfig['options']>
 
 export interface CommandContext {
-  readonly values: Readonly<Record<string, string | boolean | undefined>>
+  readonly flag: (name: string) => boolean
+  readonly option: (name: string) => string | undefined
   readonly positionals: readonly string[]
   readonly json: boolean
   readonly app: (overrides?: Pick<AppOptions, 'hosts'>) => Promise<App>

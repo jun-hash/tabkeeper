@@ -11,7 +11,7 @@ export const purgeCommand: Command = {
   },
   async run(context) {
     const app = await context.app()
-    const outcomes = await app.purge.run({ afterMs: app.config.purge.afterMs, dryRun: context.values['dry-run'] === true })
+    const outcomes = await app.purge.run({ afterMs: app.config.purge.afterMs, dryRun: context.flag('dry-run') })
     if (context.json) printJson(context, outcomes)
     else context.print(renderPurge(outcomes))
     return outcomes.some((o) => o.result === 'failed') ? 1 : 0

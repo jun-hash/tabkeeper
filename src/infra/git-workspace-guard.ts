@@ -13,7 +13,8 @@ export class GitWorkspaceGuard implements WorkspaceGuard {
   async riskOf(path: string): Promise<string | undefined> {
     const git = (...args: string[]) => runChecked(this.runner, 'git', ['-C', path, ...args])
     try {
-      if ((await git('status', '--porcelain', '--untracked-files=all')).trim()) return 'has uncommitted or untracked files'
+      if ((await git('status', '--porcelain', '--untracked-files=all')).trim())
+        return 'has uncommitted or untracked files'
       if ((await git('stash', 'list')).trim()) return 'has stashed changes'
       const upstream = await git('rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{upstream}').catch(() => '')
       if (!upstream.trim()) return 'branch has no upstream'

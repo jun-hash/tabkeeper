@@ -20,7 +20,9 @@ export function treeSurfaces(workspace: CmuxTreeWorkspace): CmuxSurface[] {
 
 export function toWorkspaces(tree: CmuxTree, observations: CmuxObservations): WorkspaceState[] {
   const agentsBySurface = new Map(
-    observations.agents.filter((a) => a.surface_id && a.active_for_surface !== false).map((a) => [normalizeId(a.surface_id ?? ''), a]),
+    observations.agents
+      .filter((a) => a.surface_id && a.active_for_surface !== false)
+      .map((a) => [normalizeId(a.surface_id ?? ''), a]),
   )
   return treeWorkspaces(tree).map((workspace) => toWorkspace(workspace, agentsBySurface, observations))
 }
@@ -60,7 +62,7 @@ function toSession(
   observations: CmuxObservations,
 ): SessionState {
   const cwd = agent?.cwd ?? workspacePath
-  const url = surface.type === 'browser' ? surface.url ?? undefined : undefined
+  const url = surface.type === 'browser' ? (surface.url ?? undefined) : undefined
   const fingerprint = observations.fingerprints.get(normalizeId(surface.id))
   const resumable = agent ? agentSession(agent.agent, agent.session_id) : undefined
   const lastActivityAt = maxDefined([

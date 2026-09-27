@@ -13,7 +13,6 @@ export class AmbiguousRecordError extends Error {
   }
 }
 
-/** Resolves a full id or a unique id prefix, like git does for commits. */
 export async function resolveRecord(store: ArchiveStore, query: string): Promise<ArchiveRecord> {
   const exact = await store.get(query)
   if (exact) return exact

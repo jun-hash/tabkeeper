@@ -1,6 +1,5 @@
 const UNIT_MS = { s: 1_000, m: 60_000, h: 3_600_000, d: 86_400_000, w: 604_800_000 } as const
 
-/** Parses durations like "90m", "12h", "7d", or "1d12h" into milliseconds. */
 export function parseDuration(input: string): number {
   const text = input.trim()
   const parts = [...text.matchAll(/(\d+(?:\.\d+)?)\s*([smhdw])/g)]
@@ -13,7 +12,6 @@ export function parseDuration(input: string): number {
 
 const DISPLAY_UNITS = ['d', 'h', 'm', 's'] as const
 
-/** Formats with at most two units, e.g. "45s", "1h30m", "3d4h". */
 export function formatDuration(ms: number): string {
   for (const [index, unit] of DISPLAY_UNITS.entries()) {
     const size = UNIT_MS[unit]

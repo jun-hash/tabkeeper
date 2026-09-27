@@ -13,7 +13,7 @@ export const doctorCommand: Command = {
       printJson(context, { config: app.configPath, data: app.dataDir, hosts })
     } else {
       context.print(`config  ${app.configPath}\ndata    ${app.dataDir}`)
-      for (const h of hosts) context.print(`${h.available ? '✓' : '✗'} ${h.host}${h.available ? '' : `  ${h.reason}`}`)
+      for (const h of hosts) context.print(h.available ? `✓ ${h.host}` : `✗ ${h.host}  ${h.reason}`)
     }
     return hosts.every((h) => h.available) ? 0 : 1
   },

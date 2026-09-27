@@ -13,7 +13,13 @@ describe('parseDuration', () => {
   it.each(['', '12', 'h', '12x', '1d junk'])('rejects %j', (input) => expect(() => parseDuration(input)).toThrow())
 
   it('formats with up to two units', () => {
-    expect([0, 45_000, 90 * 60_000, 30 * 3_600_000, 8 * 86_400_000].map(formatDuration)).toEqual(['0s', '45s', '1h30m', '1d6h', '8d'])
+    expect([0, 45_000, 90 * 60_000, 30 * 3_600_000, 8 * 86_400_000].map(formatDuration)).toEqual([
+      '0s',
+      '45s',
+      '1h30m',
+      '1d6h',
+      '8d',
+    ])
   })
 })
 

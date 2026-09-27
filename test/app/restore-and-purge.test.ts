@@ -68,7 +68,11 @@ describe('RestoreService', () => {
     ['already restored', record({ id: 'r1', status: 'restored' }), 'fake', RestoreError],
     ['from a disabled host', record({ id: 'r1', host: 'other' }), 'fake', RestoreError],
   ])('refuses to restore an archive %s', async (_, rec, host, error) => {
-    const service = new RestoreService({ adapters: new Map([[host, new FakeAdapter(host)]]), store: await seeded(rec), clock: () => NOW })
+    const service = new RestoreService({
+      adapters: new Map([[host, new FakeAdapter(host)]]),
+      store: await seeded(rec),
+      clock: () => NOW,
+    })
     await expect(service.run('r1')).rejects.toBeInstanceOf(error)
   })
 

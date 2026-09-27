@@ -8,7 +8,10 @@ describe('plan', () => {
   it('archives a whole workspace once every session has been idle past the workspace threshold', () => {
     const ws = workspace({
       ref: 'w',
-      sessions: [session({ ref: 'a', lastActivityAt: ago(8 * DAY) }), session({ ref: 'b', lastActivityAt: ago(9 * DAY) })],
+      sessions: [
+        session({ ref: 'a', lastActivityAt: ago(8 * DAY) }),
+        session({ ref: 'b', lastActivityAt: ago(9 * DAY) }),
+      ],
     })
 
     const { actions } = plan([ws], policy(), NOW)
@@ -20,7 +23,10 @@ describe('plan', () => {
     const ws = workspace({
       ref: 'w',
       lastActivityAt: ago(30 * DAY),
-      sessions: [session({ ref: 'old', lastActivityAt: ago(20 * DAY) }), session({ ref: 'new', lastActivityAt: ago(1 * HOUR) })],
+      sessions: [
+        session({ ref: 'old', lastActivityAt: ago(20 * DAY) }),
+        session({ ref: 'new', lastActivityAt: ago(1 * HOUR) }),
+      ],
     })
 
     const { actions } = plan([ws], policy(), NOW)

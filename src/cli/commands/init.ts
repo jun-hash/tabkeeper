@@ -12,10 +12,12 @@ export const initCommand: Command = {
     force: { type: 'boolean', short: 'f' },
   },
   async run(context) {
-    const path = typeof context.values.config === 'string' ? context.values.config : configFile()
+    const path = context.option('config') ?? configFile()
     await mkdir(dirname(path), { recursive: true })
     try {
-      await writeFile(path, `${JSON.stringify(DEFAULT_CONFIG_JSON, null, 2)}\n`, { flag: context.values.force ? 'w' : 'wx' })
+      await writeFile(path, `${JSON.stringify(DEFAULT_CONFIG_JSON, null, 2)}\n`, {
+        flag: context.flag('force') ? 'w' : 'wx',
+      })
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error
       context.print(`${path} already exists (use --force to overwrite).`)

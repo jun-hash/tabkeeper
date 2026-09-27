@@ -22,5 +22,6 @@ jobs:
         run: ${{ runner.os == 'Linux' && 'sudo apt-get install -y tmux' || 'brew install tmux' }}
       - run: npm ci
       - run: npm run typecheck
+      - run: npm run format:check
       - run: npm test
       - run: npm run build

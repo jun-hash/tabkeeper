@@ -11,11 +11,6 @@ export class StoreLockedError extends Error {
   }
 }
 
-/**
- * One JSON file per record plus one text file per captured scrollback:
- *   <root>/records/<id>.json
- *   <root>/scrollback/<id>/<hash(sessionRef)>.log
- */
 export class FsArchiveStore implements ArchiveStore {
   private readonly recordsDir: string
   private readonly scrollbackDir: string
@@ -59,7 +54,11 @@ export class FsArchiveStore implements ArchiveStore {
     )
     return records
       .filter((r): r is ArchiveRecord => r !== undefined)
-      .filter((r) => (filter.host === undefined || r.host === filter.host) && (filter.status === undefined || r.status === filter.status))
+      .filter(
+        (r) =>
+          (filter.host === undefined || r.host === filter.host) &&
+          (filter.status === undefined || r.status === filter.status),
+      )
       .sort((a, b) => b.archivedAt - a.archivedAt)
   }
 
@@ -69,8 +68,8 @@ export class FsArchiveStore implements ArchiveStore {
   }
 
   /**
-   * The lock file is published atomically with link(2), so it always carries its owner's pid. A lock whose owner
-   * died is removed only if it still names that same dead pid, so two recovering processes cannot both win.
+   * Published with link(2) so the file always holds its owner's pid. A stale lock is removed only
+   * if it still names the same dead pid, so two recovering processes cannot both win.
    */
   async lock(): Promise<Release> {
     await mkdir(join(this.lockPath, '..'), { recursive: true })
