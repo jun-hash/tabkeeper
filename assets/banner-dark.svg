@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" width="1280" height="400" role="img" aria-label="tabkeeper — Arc-style auto-archiving for idle agent tabs">
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8b7cff"/><stop offset="1" stop-color="#2dd4bf"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.75" cy="0.2" r="0.8">
+      <stop offset="0" stop-color="#8b7cff" stop-opacity="0.18"/><stop offset="1" stop-color="#8b7cff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <style>
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+    
+    .spin { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .idle1, .idle2, .idle3, .box, .count, .resume { transform-box: view-box; }
+    .idle1 { animation: idle1 10s ease-in-out infinite; transform-origin: 280px 180px; }
+    .idle2 { animation: idle2 10s ease-in-out infinite; transform-origin: 280px 234px; }
+    .idle3 { animation: idle3 10s ease-in-out infinite; transform-origin: 280px 288px; }
+    @keyframes idle2 {
+      0%, 22% { opacity: 1; transform: none; }
+      26% { opacity: .45; transform: none; }
+      30% { opacity: .45; transform: translateX(0); }
+      36% { opacity: 0; transform: translate(160px, 102px) scale(.4); }
+      96% { opacity: 0; transform: translate(160px, 102px) scale(.4); }
+      100% { opacity: 1; transform: none; }
+    }
+    @keyframes idle3 {
+      0%, 34% { opacity: 1; transform: none; }
+      38% { opacity: .45; transform: none; }
+      42% { opacity: .45; transform: translateX(0); }
+      48% { opacity: 0; transform: translate(160px, 54px) scale(.4); }
+      96% { opacity: 0; transform: translate(160px, 54px) scale(.4); }
+      100% { opacity: 1; transform: none; }
+    }
+    @keyframes idle1 {
+      0%, 14% { opacity: 1; transform: none; }
+      18% { opacity: .45; transform: none; }
+      22% { opacity: .45; transform: none; }
+      28% { opacity: 0; transform: translate(160px, 150px) scale(.4); }
+      66% { opacity: 0; transform: translate(160px, 150px) scale(.4); }
+      74% { opacity: 1; transform: none; }
+      100% { opacity: 1; transform: none; }
+    }
+    .box { animation: box 10s ease-in-out infinite; }
+    @keyframes box {
+      0%, 27% { transform: none; } 29% { transform: scale(1.12); } 31%, 39% { transform: none; }
+      41% { transform: scale(1.12); } 43%, 51% { transform: none; } 53% { transform: scale(1.12); } 55%, 100% { transform: none; }
+    }
+    .count { opacity: 0; }
+    .c1 { animation: c1 10s steps(1) infinite; }
+    .c2 { animation: c2 10s steps(1) infinite; }
+    .c3 { animation: c3 10s steps(1) infinite; }
+    @keyframes c1 { 0% { opacity: 0; } 28% { opacity: 1; } 40% { opacity: 0; } 70% { opacity: 0; } }
+    @keyframes c2 { 0% { opacity: 0; } 40% { opacity: 1; } 52% { opacity: 0; } 70% { opacity: 1; } 96% { opacity: 0; } }
+    @keyframes c3 { 0% { opacity: 0; } 52% { opacity: 1; } 70% { opacity: 0; } }
+    .resume { opacity: 0; animation: resume 10s ease-in-out infinite; }
+    @keyframes resume { 0%, 70% { opacity: 0; } 76%, 90% { opacity: 1; } 96%, 100% { opacity: 0; } }
+    .idle2-meta, .idle3-meta { animation: meta 10s steps(1) infinite; }
+    .idle1-meta { animation: meta1 10s steps(1) infinite; }
+    @keyframes meta1 { 0% { opacity: .35; } 12% { opacity: 1; } 66% { opacity: 0; } 96% { opacity: .35; } }
+    @keyframes meta { 0% { opacity: .35; } 12% { opacity: 1; } }
+    
+  </style>
+  <rect width="1280" height="400" rx="16" fill="#0d1117"/>
+  <rect width="1280" height="400" rx="16" fill="url(#glow)"/>
+  <rect x="60" y="40" width="460" height="340" rx="14" fill="#161b22" stroke="#30363d"/>
+  <circle cx="80" cy="58" r="5" fill="#ff5f57"/><circle cx="96" cy="58" r="5" fill="#febc2e"/><circle cx="112" cy="58" r="5" fill="#28c840"/>
+  <g class="pinned">
+      <rect x="80" y="78" width="420" height="40" rx="9" fill="#1f2630" stroke="#30363d"/>
+      <circle cx="100" cy="98" r="5" fill="#2dd4bf"/>
+      <text x="116" y="103" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="15" fill="#c9d1d9">main</text>
+      <path d="M466 90 l8 0 l-2 8 l4 4 l-6 0 l-1 8 l-1 -8 l-6 0 l4 -4 z" fill="#f0b429"/>
+    </g>
+  <g class="busy">
+      <rect x="80" y="126" width="420" height="40" rx="9" fill="#1f2630" stroke="#30363d"/>
+      <circle cx="100" cy="146" r="5" fill="#2dd4bf"/>
+      <text x="116" y="151" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="15" fill="#c9d1d9">claude · refactor billing</text>
+      <g class="spin" style="transform-origin:472px 146px"><circle cx="472" cy="146" r="8" fill="none" stroke="#30363d" stroke-width="3"/><path d="M472 138 a8 8 0 0 1 8 8" fill="none" stroke="url(#grad)" stroke-width="3" stroke-linecap="round"/></g>
+    </g>
+  <g class="idle1">
+      <rect x="80" y="174" width="420" height="40" rx="9" fill="#1f2630" stroke="#30363d"/>
+      <circle cx="100" cy="194" r="5" fill="#7d8590"/>
+      <text x="116" y="199" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="15" fill="#c9d1d9">fix flaky login test</text>
+      <text class="idle1-meta" x="484" y="199" text-anchor="end" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#7d8590">idle 14h</text>
+    </g>
+  <g class="idle2">
+      <rect x="80" y="222" width="420" height="40" rx="9" fill="#1f2630" stroke="#30363d"/>
+      <circle cx="100" cy="242" r="5" fill="#7d8590"/>
+      <text x="116" y="247" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="15" fill="#c9d1d9">spike/pdf-parser</text>
+      <text class="idle2-meta" x="484" y="247" text-anchor="end" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#7d8590">idle 8d</text>
+    </g>
+  <g class="idle3">
+      <rect x="80" y="270" width="420" height="40" rx="9" fill="#1f2630" stroke="#30363d"/>
+      <circle cx="100" cy="290" r="5" fill="#7d8590"/>
+      <text x="116" y="295" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="15" fill="#c9d1d9">npm run storybook</text>
+      <text class="idle3-meta" x="484" y="295" text-anchor="end" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#7d8590">idle 2d</text>
+    </g>
+  <g class="box" style="transform-origin:475px 344px">
+      <rect x="450" y="324" width="50" height="34" rx="7" fill="none" stroke="url(#grad)" stroke-width="2.5"/>
+      <path d="M467 338 h16" stroke="url(#grad)" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <text x="80" y="347" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#7d8590">archive</text>
+    <text class="count c1" x="438" y="347" text-anchor="end" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#2dd4bf">1</text>
+    <text class="count c2" x="438" y="347" text-anchor="end" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#2dd4bf">2</text>
+    <text class="count c3" x="438" y="347" text-anchor="end" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#2dd4bf">3</text>
+    <text class="resume" x="484" y="199" text-anchor="end" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#2dd4bf">↻ claude --resume</text><text x="600" y="190" text-anchor="start" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="76" font-weight="700" letter-spacing="-2" fill="#f0f6fc">tab<tspan fill="url(#grad)">keeper</tspan></text>
+  <text x="604" y="236" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" fill="#7d8590">Arc-style auto-archiving for idle agent tabs.</text>
+  <text x="604" y="286" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="16" fill="#7d8590">Orca · cmux · tmux · restore with --resume</text>
+</svg>

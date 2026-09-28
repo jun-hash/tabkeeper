@@ -1,4 +1,9 @@
-# tabkeeper
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
+    <img src="assets/banner-light.svg" alt="tabkeeper" width="100%">
+  </picture>
+</h1>
 
 **Arc-style auto-archiving for the terminal tabs and workspaces your coding agents leave behind.**
 
