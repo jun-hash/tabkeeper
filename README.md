@@ -5,129 +5,95 @@
   </picture>
 </h1>
 
-**Arc-style auto-archiving for the terminal tabs and workspaces your coding agents leave behind.**
+tabkeeper closes terminal tabs you haven't used in a while and lets you bring them back later.
 
-Running a fleet of agents in [Orca](https://github.com/stablyai/orca), [cmux](https://github.com/manaflow-ai/cmux), or tmux leaves you with dozens of tabs nobody has touched in days. tabkeeper does what Arc does for browser tabs: once something has been idle long enough, it snapshots it and closes it. You can restore it later, including resuming the agent conversation that was running in it.
+It works like Arc's auto-archive, but for tools that run coding agents: [Orca](https://github.com/stablyai/orca), [cmux](https://github.com/manaflow-ai/cmux), and tmux.
 
-```text
-$ tabkeeper sweep --dry-run --verbose
-orca: would archive 3, kept 2 protected
-  would archive session "Fix flaky login test" in "feat/auth" (idle 14h)
-  would archive workspace "bluegill" with 2 session(s) (idle 8d13h)
-  would archive workspace "spike/pdf-parser" with 0 session(s) (idle 18d4h)
-  kept     workspace "main" — permanent
-  kept     session "Refactor billing" in "feat/billing" — busy
+## Why
 
-$ tabkeeper list
-ID             HOST  KIND       STATUS    ARCHIVED  TARGET
-mkx2v1a0-7f3c  orca  workspace  archived  2h ago    bluegill (2 session(s))
-mkx2v19s-a1d4  orca  session    archived  2h ago    Fix flaky login test @ feat/auth
+When you run many agents at once, old tabs pile up. tabkeeper cleans them up for you. Before closing a tab, it saves:
 
-$ tabkeeper restore mkx2v19s
-Restored.
-```
+- the tab's title and folder
+- its recent output
+- the agent conversation it was running (Claude Code, Codex, or opencode)
 
-## How it works
-
-tabkeeper checks two levels, just like the sidebar you are looking at:
-
-```
-workspace   (Orca worktree · cmux workspace · tmux session)
- └─ session (terminal tab · browser tab · tmux window)
-```
-
-- **Idle sessions are archived one by one.** A tab that has been quiet for `sessionIdle` (default `12h`) is archived even if the rest of its workspace is busy.
-- **Idle workspaces are archived as a whole.** When every session in a workspace has been quiet for `workspaceIdle` (default `7d`), the workspace and everything in it are archived together.
-- **Nothing that matters is touched.** The protections below always win. Because archiving a workspace closes every tab in it, a protection on any one tab also keeps the whole workspace.
-
-| Protection | Effect |
-| --- | --- |
-| `pinned` | Pinned workspaces and all of their sessions are never archived. |
-| `protected` | Workspaces or sessions matching `protect.paths` / `protect.titles` are skipped. |
-| `busy` | A session with a running agent is kept, and so is its workspace. Orca and cmux detect agents only: a quiet dev server or `ssh` session counts as idle, so list those under `protect.titles`. |
-| `focused` | The workspace or tab you are looking at is not archived, when the host reports it. cmux and tmux report the focused tab; Orca reports only the active worktree. |
-| `permanent` | A host's permanent workspace (such as a repository's main worktree) is never archived as a whole, though its idle tabs still are. |
-| `last-session` | A workspace that is kept is never emptied: its most recent tab survives. |
-| `activity-unknown` | If the host cannot say when a tab was last active, the tab is left alone, and so is its workspace. |
-
-### What gets saved
-
-Archiving writes a record before anything is closed. Each record holds:
-
-- the workspace: title, path, branch
-- each tab: title, working directory, URL for browser tabs
-- the last `scrollbackLines` of terminal output (default `2000`), which you can read with `tabkeeper show <id> --scrollback`
-- **the agent conversation**, so that restore reopens the tab with `claude --resume <id>`, `codex resume <id>`, or `opencode --session <id>`
-
-Agent conversations come from the host when it knows them (Orca and cmux both track agent sessions). Otherwise tabkeeper matches Claude Code transcripts under `~/.claude/projects` by working directory and timestamp. If more than one transcript could match, it saves none rather than guess.
-
-### Restoring
-
-`tabkeeper restore <id>` brings a record back. You can type just the start of the id, the way you would with a git commit hash.
-
-- A **closed** archive is reopened from its snapshot: the workspace is created again if it no longer exists, and each tab is reopened with its title, working directory, and resume command.
-- A **native** archive was suspended by the host itself (Orca's "sleep"). Restoring it un-hides the workspace, and the host resumes its own sessions.
-
-### Purging (opt-in)
-
-With `purge.enabled`, workspaces that have stayed archived longer than `purge.after` (default `30d`) have their checkout deleted. Deletion only happens when the host supports it, the workspace has not come back into use, and git finds nothing to lose. Any of the following blocks a purge:
-
-- uncommitted changes or untracked files
-- stashes
-- no upstream branch
-- unpushed commits
-
-Files matched by `.gitignore` (such as `.env`, build output, or local databases) do not block a purge and are deleted with the checkout.
-
-`tabkeeper purge --dry-run` shows what would happen without deleting anything.
+When you restore the tab, the conversation continues where it left off.
 
 ## Install
 
-**Standalone binary** (no runtime needed). Each release ships builds for macOS and Linux on arm64 and x64:
+Download the binary for your system from the [latest release](https://github.com/jun-hash/tabkeeper/releases/latest):
 
 ```sh
 curl -fsSL -o tabkeeper https://github.com/jun-hash/tabkeeper/releases/latest/download/tabkeeper-darwin-arm64
-chmod +x tabkeeper && mv tabkeeper ~/.local/bin/
+chmod +x tabkeeper
+mv tabkeeper ~/.local/bin/
 ```
 
-**From source** with [Bun](https://bun.sh):
-
-```sh
-git clone https://github.com/jun-hash/tabkeeper.git && cd tabkeeper
-bun install
-bun run compile             # writes release/tabkeeper
-```
-
-The package also builds for Node.js 20+ (`bun run build`, then `node dist/cli/main.js`), which is what library users import.
+Replace `darwin-arm64` with `darwin-x64`, `linux-x64`, or `linux-arm64` if needed.
 
 ## Quick start
 
 ```sh
-tabkeeper init                      # writes ~/.config/tabkeeper/config.json
-tabkeeper doctor                    # checks which hosts are reachable
-tabkeeper sweep --dry-run --verbose # shows what would be archived and why
-tabkeeper sweep                     # archives it
-tabkeeper schedule install          # sweeps every 15 minutes (launchd on macOS; prints a cron line elsewhere)
+tabkeeper sweep --dry-run --verbose   # see what would be closed, without closing anything
+tabkeeper sweep                       # close idle tabs
+tabkeeper list                        # see what was closed
+tabkeeper restore <id>                # bring one back
+tabkeeper schedule install            # run every 15 minutes
 ```
 
-Always start with `--dry-run`. The first real sweep on a long-lived setup can archive dozens of stale workspaces at once.
+Start with `--dry-run`. The first run can close many old tabs at once.
 
-| Command | Description |
+## How it decides
+
+tabkeeper looks at two levels:
+
+- **Tabs.** A tab idle for 12 hours is closed.
+- **Workspaces** (an Orca worktree, a cmux workspace, a tmux session). If every tab in it has been idle for 7 days, the whole workspace is closed.
+
+It never closes:
+
+- pinned workspaces
+- tabs where an agent is working
+- the tab or workspace you are looking at
+- a repository's main worktree (its idle tabs can still be closed)
+- anything that matches your `protect` settings
+- tabs whose last activity is unknown
+
+It also leaves at least one tab open in every workspace it keeps.
+
+> [!NOTE]
+> Only agents count as "working". A dev server or `ssh` session with no recent output looks idle. Add them to `protect.titles` to keep them open.
+
+## Restore
+
+```sh
+tabkeeper list              # archived items, newest first
+tabkeeper show <id> -s      # details and saved output
+tabkeeper restore <id>      # reopen it
+```
+
+You can type just the first few characters of an id.
+
+Restore reopens each tab in the same folder, with the same title. If an agent was running, it resumes the conversation (for example with `claude --resume <id>`). If the workspace was deleted, cmux and tmux create it again.
+
+## Commands
+
+| Command | What it does |
 | --- | --- |
-| `sweep [--dry-run] [--host <id>] [--verbose]` | Archive whatever is idle. `--verbose` also lists what was kept and why. |
-| `list [--all] [--host <id>]` | List archives. `--all` includes restored and purged ones. |
-| `show <id> [--scrollback]` | Show one archive, optionally with its saved output. |
-| `restore <id>` | Bring an archive back. |
-| `purge [--dry-run]` | Delete checkouts of long-archived, fully pushed workspaces. |
-| `doctor` | Print config and data paths and whether each host is reachable. |
-| `init [--force]` | Write the default config. |
-| `schedule install\|uninstall [--every 15m]` | Run `sweep` on a timer. |
+| `sweep` | Close idle tabs and workspaces. Add `--dry-run` to preview, `--verbose` to see what was kept and why. |
+| `list` | Show archived items. Add `--all` to include restored ones. |
+| `show <id>` | Show one item. Add `--scrollback` to see its saved output. |
+| `restore <id>` | Reopen an item. |
+| `schedule install` | Run `sweep` every 15 minutes. Use `--every 1h` to change it. `schedule uninstall` stops it. |
+| `purge` | Delete old worktrees. See below. |
+| `doctor` | Check which apps tabkeeper can reach. |
+| `init` | Create a config file. |
 
-Every command accepts `--json` for scripting and `--config <path>` to use another config file.
+All commands accept `--json` and `--config <path>`.
 
 ## Configuration
 
-`~/.config/tabkeeper/config.json` (override with `TABKEEPER_CONFIG` or `--config`):
+Run `tabkeeper init` to create `~/.config/tabkeeper/config.json`:
 
 ```json
 {
@@ -141,113 +107,62 @@ Every command accepts `--json` for scripting and `--config <path>` to use anothe
   "purge": { "enabled": false, "after": "30d" },
   "hosts": {
     "orca": { "enabled": true },
-    "cmux": { "enabled": true, "bin": "/Applications/cmux.app/Contents/Resources/bin/cmux" }
-  },
-  "plugins": []
+    "cmux": { "enabled": true }
+  }
 }
 ```
 
-- **Durations** accept `s`, `m`, `h`, `d`, and `w`, and can be combined (`1d12h`).
-- **`protect.titles`** are case-insensitive regular expressions.
-- **Archives** live in `~/.local/share/tabkeeper`, or in `TABKEEPER_HOME` if set. There is one JSON file per record plus plain-text scrollback, so everything can be inspected with ordinary tools.
+| Setting | Meaning |
+| --- | --- |
+| `sessionIdle` | How long a tab must be idle before it is closed. |
+| `workspaceIdle` | How long a whole workspace must be idle before it is closed. |
+| `scrollbackLines` | How many lines of output to save per tab. |
+| `protect.paths` | Workspaces in these folders are never closed. |
+| `protect.titles` | Tabs whose title matches one of these patterns are never closed (case-insensitive regex). |
+| `purge` | Delete worktrees that have been archived longer than `after`. Off by default. |
+| `hosts` | Turn each app on or off. Use `bin` to set a custom path to its CLI. |
 
-## Hosts
+Durations use `m`, `h`, `d`, or `w`, and can be combined, like `1d12h`.
 
-| Host | Activity signal | Busy signal | Archiving a workspace | Agent resume | Purge |
-| --- | --- | --- | --- | --- | --- |
-| **Orca** | terminal `lastOutputAt`, worktree `lastActivityAt` | title spinner, agent hook state | archive flag + native sleep (falls back to closing tabs when the runtime is unreachable) | Orca agent hooks | ✓ `orca worktree rm` |
-| **cmux** | event log, agent session updates, screen fingerprints | agent lifecycle `running` | close workspace | cmux session records | — |
-| **tmux** (plugin example) | `window_activity` | foreground process is not a shell | kill session | Claude transcript match | — |
+Archives are plain files in `~/.local/share/tabkeeper`.
 
-Some hosts do not record when a tab was last active. For those, an adapter can report a *fingerprint* of what the tab currently shows. tabkeeper remembers each fingerprint between sweeps and treats a tab as idle from the first sweep that saw its current content. This is how cmux works without per-tab timestamps.
+## Deleting old worktrees
 
-## Adding a host
+This is off by default. With `purge.enabled`, tabkeeper deletes an Orca worktree after it has been archived for 30 days, but only if:
 
-A host is one object implementing `HostAdapter`. The core never imports a host, and a host never imports the core's internals. [`examples/tmux-plugin.mjs`](examples/tmux-plugin.mjs) is a complete tmux host in about 100 lines of plain JavaScript:
+- it has no uncommitted or untracked files
+- it has no stashes
+- every commit is pushed
 
-```jsonc
-{
-  "plugins": ["./tmux-plugin.mjs"],            // resolved relative to the config file
-  "hosts": { "tmux": { "socket": "default" } } // extra keys reach the plugin as `options.settings`
-}
-```
+Files ignored by `.gitignore` (like `.env`) are deleted with it.
 
-```ts
-import type { AdapterFactory, HostAdapter } from 'tabkeeper'
+Preview first with `tabkeeper purge --dry-run`.
 
-export const id = 'zellij'
-export const createAdapter: AdapterFactory = (options, { runner }) => ({
-  id,
-  probe, // is the host running?
-  inventory, // workspaces → sessions, with activity, busy, focused, pinned
-  readScrollback, // recent output to store in the archive
-  closeSession, // close one tab
-  archiveWorkspace, // hide or close a whole workspace; return 'native' or 'closed'
-  restore, // bring a workspace back and reopen tabs from specs
-  // removeWorkspace, // optional: delete the checkout, which enables purge
-})
-```
+## Supported apps
 
-Contract notes:
+| App | How tabkeeper closes a workspace | Can delete worktrees |
+| --- | --- | --- |
+| Orca | Uses Orca's own archive and sleep. Orca restores the sessions itself. | Yes |
+| cmux | Closes the workspace. tabkeeper restores it. | No |
+| tmux | Example plugin in [`examples/tmux-plugin.mjs`](examples/tmux-plugin.mjs) | No |
 
-- **`inventory` reports only what the host actually knows.** Leave `lastActivityAt` undefined rather than inventing a value, and return a `fingerprint` instead when that is all the host can offer.
-- **`archiveWorkspace` returns `'native'`** only when the host will resume the workspace's sessions on its own when it is shown again.
-- **`archiveWorkspace` throws `PartialArchiveError`** when it had already closed some sessions before failing. tabkeeper then keeps the snapshot. For any other error, it drops the snapshot and tries again on the next sweep.
-- **`restore` receives an empty session list** for native archives.
-- **Handles are opaque to the core.** `ref` strings go back to the adapter unchanged, so they can encode anything the host needs.
+To support another app, see [Adding a host](docs/adding-a-host.md).
 
-## Library use
+## Limitations
 
-Everything the CLI does is exported:
-
-```ts
-import { createApp } from 'tabkeeper'
-
-const app = await createApp({ hosts: ['orca'] })
-const reports = await app.sweep.run({ dryRun: true })
-```
-
-To build your own composition (another store, another scheduler, extra agent locators), wire `SweepService`, `RestoreService`, `PurgeService`, and your own implementations of the `ArchiveStore`, `AgentLocator`, and `ActivityLedger` ports.
-
-## Architecture
-
-```
-src/
-├── domain/      model + the pure archiving policy (no I/O)
-├── ports/       interfaces the core depends on: HostAdapter, ArchiveStore, AgentLocator, ActivityLedger, WorkspaceGuard
-├── app/         use cases: sweep, restore, purge, snapshot capture, observed activity
-├── infra/       filesystem store and ledger, git guard, Claude Code locator, process runner
-├── adapters/    orca/ and cmux/: each maps one host onto HostAdapter
-├── hosts/       adapter registry and plugin loading
-├── config/      config parsing and paths
-└── cli/         composition root, commands, rendering
-```
-
-Dependencies point inward. `domain` depends on nothing. `app` depends on `domain` and `ports`. Adapters and infrastructure implement ports: the plugin contract (`HostPlugin`, `AdapterFactory`, `CommandRunner`) lives in `ports/`, so a host needs nothing else from tabkeeper. `cli/app.ts` is the only file that knows every concrete class.
-
-A single lock file serializes `sweep`, `restore`, and `purge`, so a scheduled sweep never races a manual command.
-
-## Known limitations
-
-- **Restore is not transactional.** If a restore fails partway through, the archive stays `archived`, and retrying can open some tabs twice.
-- **Activity is read once per sweep.** A tab that becomes active between the inventory and the moment it is closed can still be archived. It can be restored with its scrollback and agent conversation.
-- **Orca's archive and sleep calls are internal runtime methods.** If a future Orca drops them, tabkeeper falls back to closing tabs.
+- If a restore fails halfway, running it again may open some tabs twice.
+- A tab you start using right as a sweep runs can still be closed. You can restore it.
+- Orca's archive feature isn't part of its public CLI. If it changes, tabkeeper falls back to closing tabs one by one.
 
 ## Development
 
-tabkeeper is developed with [Bun](https://bun.sh) and stays compatible with Node.js 20+.
-
 ```sh
 bun install
-bun run dev -- sweep --dry-run   # run the CLI straight from TypeScript
-bun test                         # unit tests plus a real tmux end-to-end test when tmux is installed
-bun run typecheck
-bun run format
-bun run compile                  # standalone binary in release/
-bun run build                    # Node-compatible build in dist/
+bun test
+bun run dev -- sweep --dry-run
 ```
 
-Pushing a `v*` tag builds binaries for every platform and attaches them to a GitHub release.
+See [Adding a host](docs/adding-a-host.md) for how the code is organized. Pushing a `v*` tag publishes a release with binaries.
 
 ## License
 

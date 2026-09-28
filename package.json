@@ -1,7 +1,7 @@
 {
   "name": "tabkeeper",
   "version": "0.1.0",
-  "description": "Arc-style auto-archiving for idle tabs and workspaces in agent terminals like Orca and cmux.",
+  "description": "Closes idle terminal tabs and brings them back later. Like Arc's auto-archive, for Orca, cmux, and tmux.",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
