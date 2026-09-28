@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { copyFile, mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { createApp } from '../../src/cli/app.js'
 
 const SOCKET = `tabkeeper-test-${process.pid}`
@@ -15,7 +15,8 @@ const hasTmux = (() => {
   }
 })()
 
-const tmux = (...args: string[]) => execFileSync('tmux', ['-L', SOCKET, ...args], { encoding: 'utf8' })
+const tmux = (...args: string[]) =>
+  execFileSync('tmux', ['-L', SOCKET, '-f', '/dev/null', ...args], { encoding: 'utf8' })
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 describe.skipIf(!hasTmux)('tmux plugin end to end', () => {
@@ -36,11 +37,11 @@ describe.skipIf(!hasTmux)('tmux plugin end to end', () => {
       }),
     )
 
-    tmux('new-session', '-d', '-s', 'stale', '-n', 'lonely', '-c', tmpdir())
-    tmux('new-session', '-d', '-s', 'proj', '-n', 'old', '-c', tmpdir())
+    tmux('new-session', '-d', '-s', 'stale', '-n', 'lonely', '-c', tmpdir(), 'sh')
+    tmux('new-session', '-d', '-s', 'proj', '-n', 'old', '-c', tmpdir(), 'sh')
     tmux('send-keys', '-t', 'proj:old', 'echo MARKER', 'Enter')
-    tmux('new-window', '-d', '-t', 'proj:', '-n', 'fresh')
-    await sleep(4000)
+    tmux('new-window', '-d', '-t', 'proj:', '-n', 'fresh', 'sh')
+    await sleep(3000)
     tmux('send-keys', '-t', 'proj:fresh', 'echo alive', 'Enter')
     await sleep(300)
   }, 20_000)

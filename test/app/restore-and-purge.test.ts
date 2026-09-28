@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { PurgeService } from '../../src/app/purge.js'
 import { AmbiguousRecordError, RecordNotFoundError } from '../../src/app/records.js'
 import { RestoreError, RestoreService } from '../../src/app/restore.js'

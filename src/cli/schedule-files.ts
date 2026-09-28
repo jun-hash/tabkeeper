@@ -14,8 +14,7 @@ export interface Invocation {
 }
 
 export function sweepInvocation(
-  node: string,
-  script: string,
+  program: readonly string[],
   configPath: string,
   env: Readonly<Record<string, string | undefined>>,
 ): Invocation {
@@ -23,7 +22,7 @@ export function sweepInvocation(
     const value = env[key]
     return value === undefined ? [] : [[key, value] as const]
   })
-  return { argv: [node, script, 'sweep', '--config', configPath], env: Object.fromEntries(kept) }
+  return { argv: [...program, 'sweep', '--config', configPath], env: Object.fromEntries(kept) }
 }
 
 export function cronLine(invocation: Invocation, everyMs: number, logFile: string): string {

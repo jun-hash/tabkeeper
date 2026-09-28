@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { OrcaAdapter } from '../../src/adapters/orca/orca-adapter.js'
 import { OrcaCli, OrcaError } from '../../src/adapters/orca/orca-cli.js'
 import { PartialArchiveError } from '../../src/ports/host-adapter.js'

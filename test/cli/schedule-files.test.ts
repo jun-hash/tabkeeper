@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { cronLine, launchdPlist, sweepInvocation } from '../../src/cli/schedule-files.js'
 
-const invocation = sweepInvocation('/bin/node', '/opt/tk/main.js', '/cfg/it is.json', {
+const invocation = sweepInvocation(['/bin/node', '/opt/tk/main.js'], '/cfg/it is.json', {
   PATH: '/usr/bin',
   TABKEEPER_HOME: '/data',
   SECRET_TOKEN: 'nope',

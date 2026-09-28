@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, readFile, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'bun:test'
 import type { ArchiveRecord } from '../../src/domain/model.js'
 import { ClaudeCodeLocator } from '../../src/infra/claude-code-locator.js'
 import { FsActivityLedger } from '../../src/infra/fs-activity-ledger.js'

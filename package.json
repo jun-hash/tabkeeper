@@ -24,13 +24,14 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "dev": "bun src/cli/main.ts",
+    "test": "bun test",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "prepublishOnly": "npm run typecheck && npm run format:check && npm test && npm run build",
+    "build": "tsc -p tsconfig.build.json",
+    "compile": "bun build src/cli/main.ts --compile --minify --outfile release/tabkeeper",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepublishOnly": "bun run typecheck && bun run format:check && bun test && bun run build"
   },
   "keywords": [
     "orca",
@@ -42,10 +43,10 @@
     "claude-code"
   ],
   "devDependencies": {
+    "@types/bun": "^1.4.2",
     "@types/node": "^22.20.4",
     "prettier": "^3.9.9",
-    "typescript": "^7.0.2",
-    "vitest": "^5.0.2"
+    "typescript": "^7.0.2"
   },
   "repository": {
     "type": "git",

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { plan } from '../../src/domain/policy.js'
 import { DAY, HOUR, NOW, policy, session, workspace } from '../support/builders.js'
 

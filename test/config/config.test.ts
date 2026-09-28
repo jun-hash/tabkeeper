@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { ConfigError, parseConfig, toPolicy } from '../../src/config/config.js'
 import { formatDuration, parseDuration } from '../../src/shared/duration.js'
 

@@ -78,12 +78,22 @@ Files matched by `.gitignore` (such as `.env`, build output, or local databases)
 
 ## Install
 
+**Standalone binary** (no runtime needed). Each release ships builds for macOS and Linux on arm64 and x64:
+
 ```sh
-git clone https://github.com/jun-hash/tabkeeper.git && cd tabkeeper
-npm install && npm run build && npm link
+curl -fsSL -o tabkeeper https://github.com/jun-hash/tabkeeper/releases/latest/download/tabkeeper-darwin-arm64
+chmod +x tabkeeper && mv tabkeeper ~/.local/bin/
 ```
 
-Requires Node.js 20 or newer.
+**From source** with [Bun](https://bun.sh):
+
+```sh
+git clone https://github.com/jun-hash/tabkeeper.git && cd tabkeeper
+bun install
+bun run compile             # writes release/tabkeeper
+```
+
+The package also builds for Node.js 20+ (`bun run build`, then `node dist/cli/main.js`), which is what library users import.
 
 ## Quick start
 
@@ -220,12 +230,19 @@ A single lock file serializes `sweep`, `restore`, and `purge`, so a scheduled sw
 
 ## Development
 
+tabkeeper is developed with [Bun](https://bun.sh) and stays compatible with Node.js 20+.
+
 ```sh
-npm install
-npm test          # unit tests plus a real tmux end-to-end test when tmux is installed
-npm run typecheck
-npm run build
+bun install
+bun run dev -- sweep --dry-run   # run the CLI straight from TypeScript
+bun test                         # unit tests plus a real tmux end-to-end test when tmux is installed
+bun run typecheck
+bun run format
+bun run compile                  # standalone binary in release/
+bun run build                    # Node-compatible build in dist/
 ```
+
+Pushing a `v*` tag builds binaries for every platform and attaches them to a GitHub release.
 
 ## License
 

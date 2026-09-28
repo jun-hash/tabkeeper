@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -24,7 +25,7 @@ export const scheduleCommand: Command = {
     const every = context.option('every') ?? '15m'
     const everyMs = parseDuration(every)
     const config = resolve(context.option('config') ?? configFile())
-    const invocation = sweepInvocation(process.execPath, resolve(process.argv[1] ?? 'tabkeeper'), config, process.env)
+    const invocation = sweepInvocation(currentProgram(), config, process.env)
     const logFile = join(dataDir(), 'sweep.log')
 
     if (process.platform !== 'darwin') {
@@ -55,4 +56,10 @@ export const scheduleCommand: Command = {
     context.print(`Sweeping every ${every} via ${plist}\nLogs: ${logFile}`)
     return 0
   },
+}
+
+/** A compiled binary runs itself; `node`/`bun` need the script path, which then exists on disk. */
+function currentProgram(): string[] {
+  const script = process.argv[1]
+  return script && existsSync(script) ? [process.execPath, resolve(script)] : [process.execPath]
 }

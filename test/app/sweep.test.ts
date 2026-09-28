@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { ObservedActivity } from '../../src/app/observed-activity.js'
 import { SessionCapturer } from '../../src/app/session-capturer.js'
 import { SweepService } from '../../src/app/sweep.js'
