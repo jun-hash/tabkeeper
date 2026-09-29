@@ -38,7 +38,7 @@ tabkeeper sweep --dry-run --verbose   # see what would be closed, without closin
 tabkeeper sweep                       # close idle tabs
 tabkeeper list                        # see what was closed
 tabkeeper restore <id>                # bring one back
-tabkeeper schedule install            # run every 15 minutes
+tabkeeper schedule install            # run every hour
 ```
 
 Start with `--dry-run`. The first run can close many old tabs at once.
@@ -84,7 +84,7 @@ Restore reopens each tab in the same folder, with the same title. If an agent wa
 | `list` | Show archived items. Add `--all` to include restored ones. |
 | `show <id>` | Show one item. Add `--scrollback` to see its saved output. |
 | `restore <id>` | Reopen an item. |
-| `schedule install` | Run `sweep` every 15 minutes. Use `--every 1h` to change it. `schedule uninstall` stops it. |
+| `schedule install` | Run `sweep` every hour. Use `--every 30m` to change it. `schedule uninstall` stops it. |
 | `purge` | Delete old worktrees. See below. |
 | `doctor` | Check which apps tabkeeper can reach. |
 | `init` | Create a config file. |

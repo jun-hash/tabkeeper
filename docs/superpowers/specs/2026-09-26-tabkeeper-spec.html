@@ -210,7 +210,7 @@ export const createAdapter: AdapterFactory = (options: HostConfig, { runner, env
 
 <h2 id="s7"><span class="num">7.</span> Core Flows <span class="badge badge-ok">🟢</span></h2>
 <div class="flow"><h3>F1. Sweep</h3>
-<div class="slot"><h4>① 트리거</h4>launchd/cron(기본 15m) 또는 수동 <code>tabkeeper sweep</code></div>
+<div class="slot"><h4>① 트리거</h4>launchd/cron(기본 1h) 또는 수동 <code>tabkeeper sweep</code></div>
 <div class="slot"><h4>② 워크플로우</h4>lock → 호스트별 probe → inventory → ObservedActivity(fingerprint→since) → plan → 각 action: capture(스크롤백 ∥ agent 탐지) → store.save → close/archive → report → (purge.enabled면) purge</div>
 <div class="slot"><h4>③ 입력</h4>호스트 CLI/소켓, Orca agent-hooks, cmux events.jsonl·sessions, ~/.claude/projects</div>
 <div class="slot"><h4>④ 결정</h4>전부 코드 결정론(plan). 외부/LLM 위임 없음 — 아카이브는 되돌릴 수 있어야 하고 설명 가능해야 하므로.</div>

@@ -10,11 +10,12 @@ import { UsageError } from '../command.js'
 import { cronLine, launchdPlist, sweepInvocation } from '../schedule-files.js'
 
 const LABEL = 'dev.tabkeeper.sweep'
+const DEFAULT_EVERY = '1h'
 
 export const scheduleCommand: Command = {
   name: 'schedule',
   summary: 'Run `sweep` periodically (launchd on macOS, prints a cron line elsewhere)',
-  usage: 'tabkeeper schedule <install|uninstall> [--every 15m]',
+  usage: `tabkeeper schedule <install|uninstall> [--every ${DEFAULT_EVERY}]`,
   options: {
     every: { type: 'string' },
   },
@@ -22,7 +23,7 @@ export const scheduleCommand: Command = {
     const [action] = context.positionals
     if (action !== 'install' && action !== 'uninstall') throw new UsageError('schedule needs "install" or "uninstall"')
 
-    const every = context.option('every') ?? '15m'
+    const every = context.option('every') ?? DEFAULT_EVERY
     const everyMs = parseDuration(every)
     const config = resolve(context.option('config') ?? configFile())
     const invocation = sweepInvocation(currentProgram(), config, process.env)
