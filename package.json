@@ -1,6 +1,6 @@
 {
   "name": "tabkeeper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Closes idle terminal tabs and brings them back later. Like Arc's auto-archive, for Orca, cmux, and tmux.",
   "license": "MIT",
   "type": "module",
